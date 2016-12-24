@@ -54,8 +54,13 @@ sub h_size {
 		$i++;
 		last if $i == $#unit;
 	}
-	#warn "# h_size $s $i $unit[$i]";
-	return sprintf " %5.1f%s", $s, $unit[$i];
+	my $ff =
+		$s <   10 ? 2 :
+		$s <  100 ? 1 :
+		0;
+	my $fi = 4 - $ff;
+	#warn "# h_size $s $i $fi $ff $unit[$i]";
+	return sprintf " %${fi}.${ff}f%s", $s, $unit[$i];
 }
 
 my $show_size = $ENV{SIZE} || $ARGV[0];
@@ -67,7 +72,7 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 		$date ||= shift @{ $stat->{backups}->{$instance} };
 		if ( $col lt $date ) {
 			print ' ' x length $col;
-			print '       ' if $show_size;
+			print '      ' if $show_size;
 		} elsif ( $col eq $date ) {
 			print $date;
 			print h_size($stat->{size}->{$instance}->{$date}) if $show_size;
