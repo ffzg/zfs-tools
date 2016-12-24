@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+use warnings;
+use strict;
 use autodie;
 use Data::Dump qw(dump);
 
@@ -33,14 +35,30 @@ while(<$list>) {
 
 	$stat->{$_}->{ $tags->{$_} }++ foreach (qw( instance date ));
 
+	$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{written};
+
 	push @{ $stat->{backups}->{ $tags->{instance} } }, $tags->{date};
 }
 
 warn "# stat = ",dump $stat;
 
 my @dates = sort keys %{ $stat->{date} };
-my $longest_instance = (sort map { length } keys %{$stat->{instance}})[0];
-warn $longest_instance;
+my $longest_instance = (sort map { length } keys %{$stat->{instance}})[0] + 1;
+
+sub h_size {
+	my $s = shift;
+	my @unit = ( ' ', 'K', 'M', 'G', 'T' );
+	my $i = 0;
+	while ( $s > 1024 ) {
+		$s = $s / 1024;
+		$i++;
+		last if $i == $#unit;
+	}
+	#warn "# h_size $s $i $unit[$i]";
+	return sprintf " %5.1f%s", $s, $unit[$i];
+}
+
+my $show_size = $ENV{SIZE} || $ARGV[0];
 
 foreach my $instance (sort keys %{ $stat->{backups} }) {
 	printf "%-20s", $instance;
@@ -49,11 +67,14 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 		$date ||= shift @{ $stat->{backups}->{$instance} };
 		if ( $col lt $date ) {
 			print ' ' x length $col;
+			print '       ' if $show_size;
 		} elsif ( $col eq $date ) {
 			print $date;
+			print h_size($stat->{size}->{$instance}->{$date}) if $show_size;
 			$date = undef;
 		} else {
 			print "[$date]";
+			print h_size($stat->{size}->{$instance}->{$date}) if $show_size;
 			$date = undef;
 		}
 		print " ";
