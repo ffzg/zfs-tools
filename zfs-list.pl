@@ -36,6 +36,7 @@ while(<$list>) {
 	$stat->{$_}->{ $tags->{$_} }++ foreach (qw( instance date ));
 
 	$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{written};
+	$stat->{date_size}->{ $tags->{date} } += $h{written};
 
 	push @{ $stat->{backups}->{ $tags->{instance} } }, $tags->{date};
 }
@@ -43,7 +44,7 @@ while(<$list>) {
 warn "# stat = ",dump $stat;
 
 my @dates = sort keys %{ $stat->{date} };
-my $longest_instance = (sort map { length } keys %{$stat->{instance}})[0] + 1;
+my $longest_instance = (sort { $b <=> $a } map { length } keys %{$stat->{instance}})[0] + 1;
 
 sub h_size {
 	my $s = shift;
@@ -66,7 +67,7 @@ sub h_size {
 my $show_size = $ENV{SIZE} || $ARGV[0];
 
 foreach my $instance (sort keys %{ $stat->{backups} }) {
-	printf "%-20s", $instance;
+	printf "%-${longest_instance}s", $instance;
 	my $date;
 	foreach my $col ( @dates ) {
 		$date ||= shift @{ $stat->{backups}->{$instance} };
@@ -85,4 +86,14 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 		print " ";
 	}
 	print "\n";
+}
+
+if ( $show_size ) {
+
+	print ' ' x $longest_instance;
+	foreach my $col ( @dates ) {
+		print '----------', h_size($stat->{date_size}->{$col}), " ";
+	}
+	print "\n";
+
 }
