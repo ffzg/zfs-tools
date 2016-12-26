@@ -2,7 +2,20 @@
 use warnings;
 use strict;
 use autodie;
+use Getopt::Long;
 use Data::Dump qw(dump);
+
+my $show_date;
+my $show_size;
+my $show_last;
+
+GetOptions (
+	"date"	=> \$show_date,
+	"size"	=> \$show_size,
+	"last=i" => \$show_last,
+) or die("Error in command line arguments", dump @ARGV);
+
+( $show_date, $show_size ) = ( 1,1 ) if ! defined $show_date && ! defined $show_size;
 
 my @props = qw(
 name
@@ -61,39 +74,50 @@ sub h_size {
 		0;
 	my $fi = 4 - $ff;
 	#warn "# h_size $s $i $fi $ff $unit[$i]";
-	return sprintf " %${fi}.${ff}f%s", $s, $unit[$i];
+	return sprintf "%${fi}.${ff}f%s", $s, $unit[$i];
 }
 
-my $show_size = $ENV{SIZE} || $ARGV[0];
+my $last = $#dates;
+$last = $show_last - 1 if defined $show_last;
+$last = $#dates if $last > $#dates; # limit just to existing backups
+
+sub unique_splice {
+	my ( $array, $from ) = @_;
+	my %u;
+	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } @$array;
+}
+
 
 foreach my $instance (sort keys %{ $stat->{backups} }) {
-	printf "%-${longest_instance}s", $instance;
 	my $date;
-	foreach my $col ( @dates ) {
-		$date ||= shift @{ $stat->{backups}->{$instance} };
+	my @backup_dates = unique_splice( $stat->{backups}->{$instance}, $dates[$#dates - $last]);
+	#warn "# instance $instance ",dump(@backup_dates);
+	my @line = ( sprintf("%-${longest_instance}s", $instance) );
+	foreach my $i ( $#dates - $last .. $#dates ) {
+		my $col = $dates[$i];
+		$date ||= shift @backup_dates;
+		#warn "# $instance $col ? $date\n";
 		if ( $col lt $date ) {
-			print ' ' x length $col;
-			print '      ' if $show_size;
-		} elsif ( $col eq $date ) {
-			print $date;
-			print h_size($stat->{size}->{$instance}->{$date}) if $show_size;
-			$date = undef;
-		} else {
-			print "[$date]";
-			print h_size($stat->{size}->{$instance}->{$date}) if $show_size;
+			push @line, ' ' x length($col) if $show_date;
+			push @line, '     ' if $show_size;
+		} else { # $col eq $date
+			push @line, $date if $show_date;
+			push @line, h_size($stat->{size}->{$instance}->{$date}) if $show_size;
+			$stat->{backup_count}->{$date}++;
 			$date = undef;
 		}
-		print " ";
 	}
-	print "\n";
+	print join(' ',@line), "\n";
 }
 
 if ( $show_size ) {
 
-	print ' ' x $longest_instance;
-	foreach my $col ( @dates ) {
-		print '----------', h_size($stat->{date_size}->{$col}), " ";
+	my @backup_dates = splice( @dates, $#dates - $last);
+	my @line = ( ' ' x $longest_instance );
+	foreach my $col ( @backup_dates ) {
+		push @line, sprintf("%8d =",$stat->{backup_count}->{$col}) if $show_date;
+		push @line, h_size($stat->{date_size}->{$col}) if $show_size;
 	}
-	print "\n";
+	print join(' ',@line),"\n";
 
 }
