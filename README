@@ -1,0 +1,11 @@
+backup ganeti cluster using lvm snapshots and rsync to zfs snapshots
+
+
+FIXME - add detailed installation description here
+
+
+optimize logrotate to include date in filename (to prevent multiple copies
+on copy-on-write filesystem like zfs)
+
+perl -p -i -n -e 's/(\s+)daily/$1daily\n$1dateext/' /etc/logrotate.d/*
+
