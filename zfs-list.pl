@@ -107,6 +107,7 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 			$date = undef;
 		}
 	}
+	push @line, sprintf("%-${longest_instance}s", $instance);
 	print join(' ',@line), "\n";
 }
 
