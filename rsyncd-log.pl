@@ -32,7 +32,7 @@ while(<>) {
 	@p = splice(@p, 2, $e);
 
 	my $agg_path = join('/',@p);
-	$agg_path =~ s{^(var/log|tmp|log).*}{$1};
+	$agg_path =~ s{^(var/log|log|bin|sbin|usr|lib|etc|boot|root|tmp|var/lib/\w+|var/\w+).*}{$1};
 	$stat->{$date}->{$pid}->{agg}->{ $agg_path }->{$op} += $size;
 }
 
