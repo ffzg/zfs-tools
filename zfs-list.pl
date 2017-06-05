@@ -31,7 +31,7 @@ logicalreferenced
 
 my $stat;
 
-open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props).' -t snapshot -r lib15/backup');
+open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props).' -t snapshot -r lib15/backup lib15/diskrsync');
 while(<$list>) {
 	chomp;
 	my @v = split(/\t/,$_);
@@ -44,6 +44,10 @@ while(<$list>) {
 
 	my $tags;
 	( $tags->{node}, undef, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t;
+	if ( $#t == 3 ) {
+		$tags->{date} = $t[-1];
+		$tags->{disk} = 0;
+	}
 	warn "# tags = ",dump($tags);
 
 	$stat->{$_}->{ $tags->{$_} }++ foreach (qw( instance date ));
