@@ -50,6 +50,11 @@ while(<$list>) {
 	}
 	warn "# tags = ",dump($tags);
 
+	if ( $tags->{date} !~ m/^\d\d\d\d-\d\d-\d\d$/ ) {
+		warn "SKIPPED, invalid date $tags->{date}";
+		next;
+	}
+
 	$stat->{$_}->{ $tags->{$_} }++ foreach (qw( instance date ));
 
 	$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{written};
