@@ -2,7 +2,7 @@
 
 # https://github.com/dop251/diskrsync
 
-gnt_master=r1u30
+gnt_master=`ssh r1u30 gnt-cluster getmaster`
 vg=oscarvg
 
 instance=$1
