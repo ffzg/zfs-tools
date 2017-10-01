@@ -106,7 +106,7 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 		my $col = $dates[$i];
 		$date ||= shift @backup_dates;
 		#warn "# $instance $col ? $date\n";
-		if ( $col lt $date ) {
+		if ( ! $date || $col lt $date ) {
 			push @line, ' ' x length($col) if $show_date;
 			push @line, '     ' if $show_size;
 		} else { # $col eq $date
