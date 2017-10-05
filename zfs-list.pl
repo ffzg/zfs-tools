@@ -3,6 +3,7 @@ use warnings;
 use strict;
 use autodie;
 use Getopt::Long;
+use English; # $UID
 use Data::Dump qw(dump);
 
 my $show_date;
@@ -96,6 +97,7 @@ sub unique_splice {
 	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } @$array;
 }
 
+open(my $csv, '>', "/dev/shm/backups-$UID.csv");
 
 foreach my $instance (sort keys %{ $stat->{backups} }) {
 	my $date;
@@ -113,12 +115,16 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 			push @line, $date if $show_date;
 			push @line, h_size($stat->{size}->{$instance}->{$date}) if $show_size;
 			$stat->{backup_count}->{$date}++;
+			print $csv "$date,$instance,$stat->{size}->{$instance}->{$date}\n";
 			$date = undef;
 		}
 	}
 	push @line, sprintf("%-${longest_instance}s", $instance);
 	print join(' ',@line), "\n";
+
 }
+
+close($csv);
 
 if ( $show_size ) {
 
