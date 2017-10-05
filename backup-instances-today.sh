@@ -1,12 +1,13 @@
 #!/bin/sh -e
 
-run=/dev/shm/backup
+test -z "$backup" && backup="backup"
+run=/dev/shm/$backup
 
 :> $run.instances
 :> $run.instances.finished
 
 now_i=`date +%Y%m%d`
-zfs list -H -o name -t snapshot -r lib15/backup | grep '/[0-9]@20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]$' | while read snapshot ; do
+zfs list -H -o name -t snapshot -r lib15/$backup | grep '/[0-9]@20[0-9][0-9]-[0-9][0-9]-[0-9][0-9]$' | while read snapshot ; do
 	instance=`echo $snapshot | cut -d@ -f1 | cut -d/ -f3`
 	disk=`echo $snapshot | cut -d@ -f1 | cut -d/ -f4`
 	date=`echo $snapshot | cut -d@ -f2`
