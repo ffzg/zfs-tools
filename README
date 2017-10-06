@@ -4,6 +4,35 @@ backup ganeti cluster using lvm snapshots and rsync to zfs snapshots
 FIXME - add detailed installation description here
 
 
+Add new ganeti cluster (r1u28) to backup server (lib15):
+
+1. create ssh key to access r1u28
+
+root@lib15:~/.ssh# ssh-keygen -t dsa -f ./r1u28-id_dsa
+
+2. add it to authorized_keys on r1u28 and configure backup
+   destination on lib15 and path to lvm+rsync script
+
+command="backup=oscar /srv/gnt-info/gnt-lv-snap-rsync.sh -" ssh-dss ...
+
+3. generate ssh key on r1u28 to create snapshot on lib15
+
+root@r1u28:~/.ssh# ssh-keygen -t dsa -f ./id_dsa-zfs
+
+4. add it to authorized_keys on lib15
+
+command="/srv/zfs-tools/ssh/zfs-snap.sh" ssh-dss ...
+
+5. add it to cron backup script
+
+export backup=oscar
+/srv/zfs-tools/backup-instances-today.sh | xargs -i echo \
+ 'echo {} | ssh -i /root/.ssh/r1u28-id_dsa r1u28 | tee "/dev/shm/cron.{}.log"' \
+ | tee /dev/shm/cron-$backup.sh
+sh -xe /dev/shm/cron-$backup.sh
+
+
+
 Create backup from ganeti intance SOP:
 
 1. export instance using gnt-backup
