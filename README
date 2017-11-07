@@ -52,6 +52,21 @@ zfs rename lib15/oscar/delta/3978-85-42-99-438761357446 lib15/oscar/delta/0
 
 
 
+Create backup from baneti without existing gnt-backup export
+
+1. create new directory for instance disk 0
+
+zfs create -p lib15/oscar/a1.ffzg.unizg.hr/0
+
+2. manually invoke first rsync
+
+echo a1.ffzg.unizg.hr 0 | ssh -i /root/.ssh/r1u28-id_dsa r1u28
+
+
+
+
+
+Theaks you can do to installed instances:
 
 optimize logrotate to include date in filename (to prevent multiple copies
 on copy-on-write filesystem like zfs)
