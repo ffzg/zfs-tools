@@ -1,5 +1,8 @@
 backup ganeti cluster using lvm snapshots and rsync to zfs snapshots
 
+This tools depend on scripts in https://github.com/ffzg/gnt-info repository
+to create lvm snapshots and push them to rsync server (machine with zfs).
+
 
 FIXME - add detailed installation description here
 
@@ -63,6 +66,13 @@ zfs create -p lib15/oscar/a1.ffzg.unizg.hr/0
 echo a1.ffzg.unizg.hr 0 | ssh -i /root/.ssh/r1u28-id_dsa r1u28
 
 
+
+rsync exclude and other parametars
+
+If you create lib15/oscar/instance/rsync.args file and put
+"--exclude path/to/exclude" in one or more lines, this will be
+applied when transfering files to zfs rsync server from
+https://github.com/ffzg/gnt-info/blob/master/gnt-lv-snap-rsync.sh
 
 
 
