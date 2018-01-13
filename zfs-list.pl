@@ -60,6 +60,7 @@ while(<$list>) {
 
 	$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{written};
 	$stat->{date_size}->{ $tags->{date} } += $h{written};
+	push @{ $stat->{date_disks}->{ $tags->{date} } }, $tags->{disk};
 
 	push @{ $stat->{backups}->{ $tags->{instance} } }, $tags->{date};
 }
@@ -131,7 +132,7 @@ if ( $show_size ) {
 	my @backup_dates = splice( @dates, $#dates - $last);
 	my @line = ( ' ' x $longest_instance );
 	foreach my $col ( @backup_dates ) {
-		push @line, sprintf("%8d =",$stat->{backup_count}->{$col}) if $show_date;
+		push @line, sprintf("%8s =",join('/', $stat->{backup_count}->{$col}, $#{$stat->{date_disks}->{$col}}+1)) if $show_date;
 		push @line, h_size($stat->{date_size}->{$col}) if $show_size;
 	}
 	print join(' ',@line),"\n";
