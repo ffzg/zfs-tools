@@ -2,14 +2,14 @@
 
 # https://github.com/dop251/diskrsync
 
-gnt_master=`ssh r1u30 gnt-cluster getmaster`
-vg=oscarvg
+backup() {
+	cluster_node=$1
+	vg=$2
 
-instance=$1
-disk=$2
+gnt_master=`ssh $cluster_node gnt-cluster getmaster`
 
-instance=kappa.ffzg.hr
-disk=0
+instance=$3
+disk=$4
 
 instance=`ssh $gnt_master gnt-instance list --no-headers -o name $instance | head -1`
 
@@ -29,6 +29,11 @@ ssh $node lvs -o name,tags | grep $instance | tee /dev/shm/$instace.$node.lvs | 
 
 	zfs snap lib15/diskrsync/$instance@$date
 done
+
+}
+
+backup r1u30 oscarvg kappa.ffzg.hr 0
+backup lib30 ffzgvg theta.ffzg.hr 0
 
 zfs list -t snapshot -r lib15/diskrsync
 
