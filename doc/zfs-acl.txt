@@ -1,0 +1,4 @@
+# enable acl support
+zfs set acltype=posixacl lib15/backup
+zfs set xattr=sa lib15/backup
+
