@@ -2,14 +2,20 @@
 
 # https://github.com/dop251/diskrsync
 
+zpool=`sudo zpool list -H -o name | head -1`
+
 backup() {
-	cluster_node=$1
-	vg=$2
+# broken ident for better readability
+
+cluster_node=$1
+vg=$2
+instance=$3
+disk=$4
+
+zfs list $zpool/diskrsync/$instance || ( echo "ERROR fix with: zfs create -p $zpool/diskrsync/$instance" && exit 1 )
 
 gnt_master=`ssh $cluster_node gnt-cluster getmaster`
 
-instance=$3
-disk=$4
 
 instance=`ssh $gnt_master gnt-instance list --no-headers -o name $instance | head -1`
 
@@ -22,19 +28,30 @@ ssh $node lvs -o name,tags | grep $instance | tee /dev/shm/$instace.$node.lvs | 
 
 	ssh $node lvcreate -L20480m -s -n$lv.snap /dev/$vg/$lv
 
-	time /usr/local/bin/diskrsync --no-compress --verbose $node:/dev/$vg/$lv.snap /lib15/diskrsync/$instance/$disk
+	time /usr/local/bin/diskrsync --no-compress --verbose $node:/dev/$vg/$lv.snap /$zpool/diskrsync/$instance/$disk
 
 	ssh $node lvremove -f /dev/$vg/$lv.snap
 	date=`date +%Y-%m-%d`
 
-	zfs snap lib15/diskrsync/$instance@$date
+	zfs snap $zpool/diskrsync/$instance@$date
 done
 
 }
 
-backup r1u30 oscarvg kappa.ffzg.hr 0
-backup lib30 ffzgvg theta.ffzg.hr 0
+if [ "$zpool" = "lib15" ] ; then
 
-zfs list -t snapshot -r lib15/diskrsync
+	backup r1u30 oscarvg kappa.ffzg.hr 0
+	backup lib30 ffzgvg theta.ffzg.hr 0
 
+	zfs list -t snapshot -r lib15/diskrsync
 
+elif [ "$zpool" = "lib20" ] ; then
+
+	backup lib30 ffzgvg safeq 0
+
+	zfs list -t snapshot -r $zpool/diskrsync
+
+else
+	echo "Unknown pool [$zpool] edit script to add config"
+	exit 1
+fi
