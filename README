@@ -55,7 +55,7 @@ zfs rename lib15/oscar/delta/3978-85-42-99-438761357446 lib15/oscar/delta/0
 
 
 
-Create backup from baneti without existing gnt-backup export
+Create backup from ganeti without existing gnt-backup export
 
 1. create new directory for instance disk 0
 
@@ -76,10 +76,15 @@ https://github.com/ffzg/gnt-info/blob/master/gnt-lv-snap-rsync.sh
 
 
 
-Theaks you can do to installed instances:
+Tweaks you can do to installed instances:
 
 optimize logrotate to include date in filename (to prevent multiple copies
 on copy-on-write filesystem like zfs)
 
 perl -p -i -n -e 's/(\s+)daily/$1daily\n$1dateext/' /etc/logrotate.d/*
 
+
+
+List backups showing written which is real size of uncompressed data:
+
+zfs list -r -t all -o space,logicalreferenced,written,compressratio lib20/backup
