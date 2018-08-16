@@ -10,7 +10,11 @@ export backup=oscar
 /srv/zfs-tools/backup-instances-today.sh | xargs -i echo 'echo {} | ssh -i /root/.ssh/r1u28-id_dsa r1u28 | tee "/dev/shm/cron.{}.log"' | tee /dev/shm/cron-$backup.sh
 sh -xe /dev/shm/cron-$backup.sh
 
-/srv/zfs-tools/zfs-list.pl
-
 /srv/zfs-tools/diskrsync.sh
 
+/srv/zfs-tools/zfs-list.pl | tee /dev/shm/zfs-list.txt
+
+
+ssh lib20 /srv/zfs-tools/diskrsync.sh
+
+ssh lib20 /lib20/zpool-backup/cloud.sh
