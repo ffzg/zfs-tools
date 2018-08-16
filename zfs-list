@@ -1,0 +1,1 @@
+zfs list -r -t all -o space,logicalreferenced,written,compressratio `test -z "$1" && echo lib20/backup lib20/diskrsync || echo $*`
