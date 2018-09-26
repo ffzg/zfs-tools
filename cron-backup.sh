@@ -7,7 +7,7 @@
 sh -xe /dev/shm/cron.sh
 
 export backup=oscar
-/srv/zfs-tools/backup-instances-today.sh | xargs -i echo 'echo {} | ssh -i /root/.ssh/oscar-lv-snap-id_rsa root@oscar.net.ffzg.hr | tee "/dev/shm/cron.{}.log"' | tee /dev/shm/cron-$backup.sh
+/srv/zfs-tools/backup-instances-today.sh | xargs -i echo 'echo {} | ssh -i /root/.ssh/oscar-lv-snap-id_rsa root@oscar.gnt.ffzg.hr | tee "/dev/shm/cron.{}.log"' | tee /dev/shm/cron-$backup.sh
 sh -xe /dev/shm/cron-$backup.sh
 
 /srv/zfs-tools/diskrsync.sh
