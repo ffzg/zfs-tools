@@ -1,0 +1,8 @@
+You will need to add keys of your hosts to ssh known_hosts so that scripts can access host from crontab
+
+ssh-keyscan -H oscar.gnt.ffzg.hr >> /root/.ssh/known_hosts
+
+Then you can add keys from all nodes:
+
+ssh oscar.gnt.ffzg.hr gnt-node list --no-headers -o name | xargs ssh-keyscan -H | sort -u >> /root/.ssh/known_hosts
+
