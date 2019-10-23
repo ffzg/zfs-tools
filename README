@@ -18,9 +18,11 @@ root@lib15:~/.ssh# ssh-keygen -t dsa -f ./r1u28-id_dsa
 
 command="backup=oscar /srv/gnt-info/gnt-lv-snap-rsync.sh -" ssh-dss ...
 
-3. generate ssh key on r1u28 to create snapshot on lib15
+3. generate ssh key on r1u28 to create snapshot on lib15 and distribute it
 
-root@r1u28:~/.ssh# ssh-keygen -t dsa -f ./id_dsa-zfs
+root@r1u28:# ssh-keygen -t dsa -f /etc/ganeti/id_dsa-zfs-snap
+
+root@r1u28:# gnt-cluster copyfile /etc/ganeti/id_dsa-zfs-snap
 
 4. add it to authorized_keys on lib15
 
