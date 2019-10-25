@@ -18,6 +18,8 @@ GetOptions (
 
 ( $show_date, $show_size ) = ( 1,1 ) if ! defined $show_date && ! defined $show_size;
 
+my $pool = $ENV{ZFS_POOL} || `zpool list -H -o name`;
+
 my @props = qw(
 name
 creation
@@ -32,7 +34,7 @@ logicalreferenced
 
 my $stat;
 
-open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props).' -t snapshot -r lib15/backup lib15/diskrsync lib15/oscar');
+open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool/backup $pool/diskrsync $pool/oscar");
 while(<$list>) {
 	chomp;
 	my @v = split(/\t/,$_);
