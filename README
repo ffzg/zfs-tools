@@ -4,19 +4,42 @@ This tools depend on scripts in https://github.com/ffzg/gnt-info repository
 to create lvm snapshots and push them to rsync server (machine with zfs).
 
 
-FIXME - add detailed installation description here
-
 
 Add new ganeti cluster (r1u28) to backup server (lib15):
 
+0. configure rsync_server to accept new backups
+
+root@lib20:/srv/zfs-tools# zfs list lib20/oscar
+NAME          USED  AVAIL  REFER  MOUNTPOINT
+lib20/oscar   103K  4.50T  28.2K  /lib20/oscar
+
+First configure rsync targets in /etc/rsyncd.conf:
+
+[oscar]
+        comment = oscar.gnt.ffzg.hr
+        path = /lib20/oscar/
+        use chroot = yes
+        lock file = /var/lock/rsyncd.oscar
+        read only = no
+        list = yes
+        uid = root
+        gid = root
+        strict modes = yes
+        ignore errors = no
+        ignore nonreadable = yes
+        transfer logging = yes
+        timeout = 600
+        refuse options = checksum dry-run
+        dont compress = *.gz *.tgz *.zip *.z *.rpm *.deb *.iso *.bz2 *.tbz
+
 1. create ssh key to access r1u28
 
-root@lib15:~/.ssh# ssh-keygen -t dsa -f ./r1u28-id_dsa
+root@lib20:~/.ssh# ssh-keygen -f ./oscar-lib20
 
 2. add it to authorized_keys on r1u28 and configure backup
-   destination on lib15 and path to lvm+rsync script
+   destination on lib20 and path to lvm+rsync script
 
-command="backup=oscar /srv/gnt-info/gnt-lv-snap-rsync.sh -" ssh-dss ...
+command="rsync_server=lib20 backup=oscar /srv/gnt-info/gnt-lv-snap-rsync.sh -" ssh-dss ...
 
 3. generate ssh key on r1u28 to create snapshot on lib15
 
