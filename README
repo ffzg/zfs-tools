@@ -51,6 +51,10 @@ root@r1u28:# gnt-cluster copyfile /etc/ganeti/id_dsa-zfs-snap
 
 command="/srv/zfs-tools/ssh/zfs-snap.sh" ssh-dss ...
 
+4.1 ensure that rsync_server lib15 is known from all nodes in cluster
+
+root@r1u28:# gnt-cluster command "sh -cx 'yes | ssh -i /etc/ganeti/id_dsa-zfs-snap lib15'"
+
 5. add it to cron backup script
 
 export backup=oscar
