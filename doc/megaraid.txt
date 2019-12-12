@@ -1,0 +1,13 @@
+
+When using disks from existing megaraid arrays you need to first erase
+foreign config from disks:
+
+megacli -PDList -aALL | grep -B 17 -A 6 Unconfigured
+
+megacli -CfgForeign -Scan -aALL
+
+megacli -CfgForeign -Clear 0 -a0
+
+
+repeat last command as many times as you have new Unconfigured disks
+with foreign config.
