@@ -8,6 +8,57 @@ megacli -CfgForeign -Scan -aALL
 
 megacli -CfgForeign -Clear 0 -a0
 
-
 repeat last command as many times as you have new Unconfigured disks
 with foreign config.
+
+
+
+Since this adapter doesn't have a JBOD mode, we need to create RAID0
+for each disk.
+
+First, let's find Enclosure and slot for Unconfigured device, eg:
+
+megacli -PDList -aALL | less
+
+
+Enclosure Device ID: 32
+Slot Number: 3
+Enclosure position: N/A
+Device Id: 3
+WWN:
+Sequence Number: 1
+Media Error Count: 0
+Other Error Count: 6
+Predictive Failure Count: 0
+Last Predictive Failure Event Seq Number: 0
+PD Type: SATA
+
+Raw Size: 1.819 TB [0xe8e088b0 Sectors]
+Non Coerced Size: 1.818 TB [0xe8d088b0 Sectors]
+Coerced Size: 1.818 TB [0xe8d00000 Sectors]
+Sector Size:  0
+Firmware state: Unconfigured(good), Spun Up
+Device Firmware Level: 1A01
+Shield Counter: 0
+Successful diagnostics completion on :  N/A
+SAS Address(0): 0x1221000003000000
+Connected Port Number: 3(path0)
+Inquiry Data:      WD-WCC5C0048196WDC WD2000F9YZ-09N20L0                  01.01A01
+
+
+
+Now create RAID0 from this disk:
+
+megacli -CfgLdAdd -r0 [32:3] -a0
+
+
+After this dmesg will show disk:
+
+[6403042.060469] scsi 0:2:6:0: Direct-Access     DELL     PERC 6/i         1.22 PQ: 0 ANSI: 5
+[6403042.280362] sd 0:2:6:0: Attached scsi generic sg0 type 0
+[6403042.280555] sd 0:2:6:0: [sdh] 3905945600 512-byte logical blocks: (2.00 TB/1.82 TiB)
+[6403042.282533] sd 0:2:6:0: [sdh] Write Protect is off
+[6403042.288080] sd 0:2:6:0: [sdh] Mode Sense: 1f 00 10 08
+[6403042.289735] sd 0:2:6:0: [sdh] Write cache: disabled, read cache: enabled, supports DPO and FUA
+[6403042.355130]  sdh: sdh1 sdh2 sdh3 sdh4
+[6403042.369085] sd 0:2:6:0: [sdh] Attached SCSI disk
