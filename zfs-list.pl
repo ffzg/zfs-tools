@@ -83,7 +83,7 @@ sub h_size {
 	}
 	my $ff =
 		$s <   9.995 ? 2 : # < 10 is not good, because 9.996 will become 10.00 in sprintf rounding
-		$s <  99.995 ? 1 :
+		$s <  99.95  ? 1 :
 		0;
 	my $fi = 4 - $ff;
 	#warn "# h_size $s $i $fi $ff $unit[$i]";
