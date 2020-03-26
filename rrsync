@@ -3,16 +3,19 @@
 # Purpose: Restricts rsync to subdirectory declared in .ssh/authorized_keys
 # Author: Joe Smith <js-cgi@inwap.com> 30-Sep-2004
 # Modified by: Wayne Davison <wayned@samba.org>
+# Modified by: Dobrica Pavlinusic <dpavlin@rot13> -- added zfs snap
 use strict;
 
 use Socket;
 use Cwd 'abs_path';
 use File::Glob ':glob';
+use POSIX qw(strftime);
+use autodie;
 
 # You may configure these values to your liking.  See also the section
 # of options if you want to disable any options that rsync accepts.
 use constant RSYNC => '/usr/bin/rsync';
-use constant LOGFILE => 'rrsync.log';
+use constant LOGFILE => '/var/log/rrsync.log';
 
 my $Usage = <<EOM;
 Use 'command="$0 [-ro|-wo] SUBDIR"'
@@ -227,7 +230,18 @@ if ($write_log) {
 }
 
 # Note: This assumes that the rsync protocol will not be maliciously hijacked.
-exec(RSYNC, @opts, @args) or die "exec(rsync @opts @args) failed: $? $!";
+system(RSYNC, @opts, @args); # or die "exec(rsync @opts @args) failed: $? $!";
+
+
+
+# XXX dpavlin zfs snap addition
+my $path = $subdir;
+$path =~ s{/$}{}; # strip slash
+$path =~ s{^/}{}; # strip slash
+$path .= '@' . strftime("%Y-%m-%d", localtime);
+system("zfs snap $path");
+
+
 
 sub check_arg
 {
