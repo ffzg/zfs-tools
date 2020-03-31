@@ -34,7 +34,7 @@ logicalreferenced
 
 my $stat;
 
-open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool/backup $pool/diskrsync $pool/oscar");
+open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool/backup $pool/diskrsync $pool/oscar $pool/rack2");
 while(<$list>) {
 	chomp;
 	my @v = split(/\t/,$_);
