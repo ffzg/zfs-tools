@@ -4,6 +4,8 @@
 # Author: Joe Smith <js-cgi@inwap.com> 30-Sep-2004
 # Modified by: Wayne Davison <wayned@samba.org>
 # Modified by: Dobrica Pavlinusic <dpavlin@rot13> -- added zfs snap
+#
+# you need to touch /var/log/rrsync.log so it will be used
 use strict;
 
 use Socket;
