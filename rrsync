@@ -221,6 +221,11 @@ die "$0: invalid rsync-command syntax or options\n" if $in_options;
 
 @args = ( '.' ) if !@args;
 
+# XXX dpavlin added transfer log
+push @opts, '--log-file=/var/log/rrsync-transfer.log';
+push @opts, "--log-file-format=%o $subdir %f %l";
+
+
 if ($write_log) {
   my ($mm,$hh) = (localtime)[1,2];
   my $host = $ENV{SSH_CONNECTION} || 'unknown';
