@@ -4,16 +4,26 @@ use strict;
 use autodie;
 use Data::Dump qw(dump);
 
+# this script works with rsync transfer logs if path is host/disk/path or with rrsync
+
+my $debug = $ENV{DEBUG} || 0;
+
 my $stat;
 
 while(<>) {
 	chomp;
 	my @v = split(/\s/,$_);
-	if ( $#v != 9 ) {
-		#warn "SKIP: [$_]\n";
+	my ( $date, $time, $pid, $op, $from_host, $from_ip, $share, undef, $path, $size );
+	if ( $#v == 9 ) {
+		( $date, $time, $pid, $op, $from_host, $from_ip, $share, undef, $path, $size ) = @v;
+	} elsif ( $#v == 6 ) {
+		( $date, $time, $pid, $op, $from_host, $path, $size ) = @v;
+		$from_host =~ s{^.*/}{}; # strip path
+		$path = "$from_host/0/$path"; # host/disk/path
+	} else {
+		warn "SKIP $#v: [$_]\n" if $debug;
 		next;
 	}
-	my ( $date, $time, $pid, $op, $from_host, $from_ip, $share, undef, $path, $size ) = @v;
 	#warn "# $date $pid $op $path $size\n";
 	if ( ++$stat->{$op} % 10000 == 0 ) {
 		print STDERR "$op $stat->{$op} ";
