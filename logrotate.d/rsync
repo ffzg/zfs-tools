@@ -1,0 +1,8 @@
+/var/log/rsyncd.log
+{
+	rotate 365
+	daily
+	missingok
+	notifempty
+	dateext
+}

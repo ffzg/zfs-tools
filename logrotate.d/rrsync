@@ -1,0 +1,8 @@
+/var/log/rrsync.log /var/log/rrsync-transfer.log
+{
+	rotate 365
+	daily
+	missingok
+	notifempty
+	dateext
+}
