@@ -5,4 +5,7 @@
 	missingok
 	notifempty
 	dateext
+	postrotate
+		touch /var/log/rrsync.log
+	endscript
 }
