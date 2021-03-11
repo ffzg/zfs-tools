@@ -5,7 +5,8 @@
 zpool=`sudo zpool list -H -o name | head -1`
 
 # to work with ganeti masterfailover we need to ignore host key
-ssh='ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ssh_o='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ssh="ssh $ssh_o"
 
 backup() {
 # broken ident for better readability
@@ -31,7 +32,7 @@ $ssh $node lvs -o name,tags | grep $instance | tee /dev/shm/$instace.$node.lvs |
 
 	$ssh $node lvcreate -L20480m -s -n$lv.snap /dev/$vg/$lv
 
-	time /usr/local/bin/diskrsync --no-compress --verbose $node:/dev/$vg/$lv.snap /$zpool/diskrsync/$instance/$disk
+	time /usr/local/bin/diskrsync --no-compress --ssh-flags "$ssh_o" --verbose $node:/dev/$vg/$lv.snap /$zpool/diskrsync/$instance/$disk
 
 	$ssh $node lvremove -f /dev/$vg/$lv.snap
 	date=`date +%Y-%m-%d`
