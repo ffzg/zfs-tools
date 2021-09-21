@@ -52,6 +52,7 @@ if [ "$zpool" = "lib15" ] ; then
 elif [ "$zpool" = "lib20" ] ; then
 
 	backup cluster.gnt.ffzg.hr ffzgvg safeq 0
+	backup cluster.gnt.ffzg.hr ffzgvg electra.ffzg.hr 0
 
 	zfs list -t snapshot -r $zpool/diskrsync
 
