@@ -15,3 +15,4 @@ sh -xe /dev/shm/cron-$backup.sh
 
 /srv/zfs-tools/zfs-list.pl | tee /dev/shm/zfs-list.txt
 
+SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl lib15/oscar/koha.ffzg.hr
