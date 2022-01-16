@@ -9,11 +9,12 @@ my $from_pool = shift @ARGV || 'lib15/oscar';
 my $to_host   = shift @ARGV || 'srce01.net.ffzg.hr';
 my $to_pool   = shift @ARGV || 'srce01';
 
-my $dr_snaps_keep = 7; # number of snapshots to keep on dr pool
+my $dr_snaps_keep = $ENV{SNAPS_KEEP} || 7; # number of snapshots to keep on dr pool
+my $debug = $ENV{DEBUG} || 0;
 
 sub cmd {
 	my $cmd = join(' ', @_);
-	warn "# cmd: $cmd\n";
+	warn "# cmd: $cmd\n" if $debug;
 	system($cmd) == 0 or die "system $cmd failed: $?";
 }
 
@@ -22,7 +23,7 @@ sub list_snapshots {
 	my $ssh = '';
 	$ssh = "ssh $host" if $host;
 
-	warn "# list_snapshots $host $pool\n";
+	warn "# list_snapshots $host $pool\n" if $debug;
 	open(my $fh, '-|', "$ssh zfs list -H -r -o name -t snapshot $pool");
 	my @s;
 	while(<$fh>) {
@@ -47,7 +48,7 @@ foreach ( @to ) {
 	push @{ $to_snap->{$fs} }, $date;
 }
 
-warn "# to_snap = ",dump( $to_snap );
+warn "# to_snap = ",dump( $to_snap ) if $debug;
 
 } # refresh_to_snap
 
@@ -81,7 +82,7 @@ foreach my $fs ( sort keys %$from_snap ) {
 
 	foreach my $date ( @{ $to_snap->{$fs} } ) {
 		if ( $date lt $from_snap->{$fs}->[0] ) { # older than first snap to keep
-			cmd "ssh $to_host zfs destroy -v $to_pool/$fs\@$date";
+			cmd "ssh $to_host zfs destroy $to_pool/$fs\@$date";
 			refresh_to_snap;
 		}
 	}
@@ -91,18 +92,18 @@ foreach my $fs ( sort keys %$from_snap ) {
 
 		if ( ! grep { /^$date$/ } @{ $to_snap->{$fs} } ) {
 			if ( $i == 0 ) { # full send if first one
-				cmd "zfs send -v $fs\@$date | ssh $to_host zfs receive -F $to_pool/$fs";
+				cmd "zfs send $fs\@$date | ssh $to_host zfs receive -F $to_pool/$fs";
 				refresh_to_snap;
 			} else {
 				my $first_date = $to_snap->{$fs}->[-1];
 				my $last_date  = $from_snap->{$fs}->[-1];
-				cmd "zfs send -v -I $first_date $fs\@$last_date | ssh $to_host zfs receive $to_pool/$fs";
+				cmd "zfs send -I $first_date $fs\@$last_date | ssh $to_host zfs receive $to_pool/$fs";
 				refresh_to_snap;
 			}
 		}
 	}
 }
 
-warn "# from_snap = ",dump( $from_snap );
+warn "# from_snap = ",dump( $from_snap ) if $debug;
 
 
