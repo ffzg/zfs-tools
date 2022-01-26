@@ -16,6 +16,8 @@ GetOptions (
 	"last=i" => \$show_last,
 ) or die("Error in command line arguments", dump @ARGV);
 
+my $debug = $ENV{DEBUG} || 0;
+
 ( $show_date, $show_size ) = ( 1,1 ) if ! defined $show_date && ! defined $show_size;
 
 my $pool = $ENV{ZFS_POOL} || `zpool list -H -o name`;
@@ -40,10 +42,10 @@ while(<$list>) {
 	my @v = split(/\t/,$_);
 	my %h;
 	@h{@props} = @v;
-	warn "# h = ",dump(\%h);
+	warn "# h = ",dump(\%h) if $debug;
 
 	my @t = split(/[\/@]/,$h{name});
-	warn "# t = ", dump @t;
+	warn "# t = ", dump @t if $debug;
 
 	my $tags;
 	( $tags->{node}, undef, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t;
@@ -51,7 +53,7 @@ while(<$list>) {
 		$tags->{date} = $t[-1];
 		$tags->{disk} = 0;
 	}
-	warn "# tags = ",dump($tags);
+	warn "# tags = ",dump($tags) if $debug;
 
 	if ( $tags->{date} !~ m/^\d\d\d\d-\d\d-\d\d$/ ) {
 		warn "SKIPPED, invalid date $tags->{date}";
@@ -67,7 +69,7 @@ while(<$list>) {
 	push @{ $stat->{backups}->{ $tags->{instance} } }, $tags->{date};
 }
 
-warn "# stat = ",dump $stat;
+warn "# stat = ",dump $stat if $debug;
 
 my @dates = sort keys %{ $stat->{date} };
 my $longest_instance = (sort { $b <=> $a } map { length } keys %{$stat->{instance}})[0] + 1;
