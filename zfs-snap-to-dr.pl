@@ -31,7 +31,7 @@ sub list_snapshots {
 		push @s, $_;
 	}
 	close($fh);
-	return @s;
+	return sort @s;
 }
 
 
