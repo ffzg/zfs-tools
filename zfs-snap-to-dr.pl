@@ -81,7 +81,9 @@ foreach my $fs ( sort keys %$from_snap ) {
 	}
 
 	foreach my $date ( @{ $to_snap->{$fs} } ) {
-		if ( $date lt $from_snap->{$fs}->[0] ) { # older than first snap to keep
+		if ( $date lt $from_snap->{$fs}->[0]	# older than first snap to keep
+			&& scalar @{ $from_snap->{$fs} } > $dr_snaps_keep # source has enough snapshots
+		) {
 			cmd "ssh $to_host zfs destroy $to_pool/$fs\@$date";
 			refresh_to_snap;
 		}
