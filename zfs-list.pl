@@ -9,11 +9,13 @@ use Data::Dump qw(dump);
 my $show_date;
 my $show_size;
 my $show_last;
+my $show_used;
 
 GetOptions (
 	"date"	=> \$show_date,
 	"size"	=> \$show_size,
 	"last=i" => \$show_last,
+	"used"	=> \$show_used,
 ) or die("Error in command line arguments", dump @ARGV);
 
 my $debug = $ENV{DEBUG} || 0;
@@ -36,7 +38,7 @@ logicalreferenced
 
 my $stat;
 
-open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool/backup $pool/diskrsync $pool/oscar $pool/rack2");
+open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool/backup $pool/diskrsync $pool/oscar $pool/oscar-zfs $pool/rack2");
 while(<$list>) {
 	chomp;
 	my @v = split(/\t/,$_);
@@ -62,8 +64,13 @@ while(<$list>) {
 
 	$stat->{$_}->{ $tags->{$_} }++ foreach (qw( instance date ));
 
-	$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{written};
-	$stat->{date_size}->{ $tags->{date} } += $h{written};
+	if ( $show_used ) {
+		$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{used};
+		$stat->{date_size}->{ $tags->{date} } += $h{used};
+	} else {
+		$stat->{size}->{ $tags->{instance} }->{ $tags->{date} } += $h{written};
+		$stat->{date_size}->{ $tags->{date} } += $h{written};
+	}
 	push @{ $stat->{date_disks}->{ $tags->{date} } }, $tags->{disk};
 
 	push @{ $stat->{backups}->{ $tags->{instance} } }, $tags->{date};
