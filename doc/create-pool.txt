@@ -1,0 +1,10 @@
+# new pool configuration
+
+zfs set compression=zstd-6 zamd
+zfs set atime=off zamd
+
+support porix acls (needed for SElinux)
+
+zfs set acltype=posixacl zamd/backup
+zfs set xattr=sa zamd/backup
+

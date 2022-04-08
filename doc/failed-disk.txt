@@ -1,0 +1,76 @@
+# how to replace failed disk
+
+
+  pool: t2
+ state: DEGRADED
+status: One or more devices has experienced an unrecoverable error.  An
+	attempt was made to correct the error.  Applications are unaffected.
+action: Determine if the device needs to be replaced, and clear the errors
+	using 'zpool clear' or replace the device with 'zpool replace'.
+   see: https://openzfs.github.io/openzfs-docs/msg/ZFS-8000-9P
+  scan: scrub in progress since Tue Apr  5 09:30:15 2022
+	2.67T scanned at 342M/s, 2.44T issued at 313M/s, 7.81T total
+	28.4M repaired, 31.28% done, 04:59:17 to go
+config:
+
+	NAME        STATE     READ WRITE CKSUM
+	t2          DEGRADED     0     0     0
+	  mirror-0  DEGRADED     0     0     0
+	    sda     DEGRADED   100     0   161  too many errors  (repairing)
+	    sdb     ONLINE       0     0     0
+	  mirror-1  ONLINE       0     0     0
+	    sdc     ONLINE       0     0     0
+	    sdd     ONLINE       0     0     0
+	  mirror-2  ONLINE       0     0     0
+	    sdf     ONLINE       0     0     0
+	    sdg     ONLINE       0     0     0
+
+errors: No known data errors
+
+
+## mark failed disk
+
+root@zamd:~# ledctl failure=/dev/sda
+
+## replace it
+
+root@zamd:~# lsblk --scsi -m
+NAME HCTL       TYPE VENDOR   MODEL             REV SERIAL          TRAN   SIZE OWNER GROUP MODE
+sda  0:0:0:0    disk ATA      WDC_WD40EFRX-68W 0A82 WD-WCC4E5UFKHVE sas    3.6T root  disk  brw-rw----
+sdb  0:0:1:0    disk ATA      WDC_WD40EFRX-68W 0A82 WD-WCC4E2XY0DUA sas    3.6T root  disk  brw-rw----
+sdc  19:0:0:0   disk ATA      WDC_WD40EFRX-68N 0A82 WD-WCC7K5CLLFFD sas    3.6T root  disk  brw-rw----
+sdd  19:0:1:0   disk ATA      WDC_WD40EFRX-68N 0A82 WD-WCC7K1TN8756 sas    3.6T root  disk  brw-rw----
+sde  19:0:2:0   disk ATA      Samsung_SSD_850  2B6Q S24ZNX0H520438T sas  119.2G root  disk  brw-rw----
+sdf  0:0:3:0    disk ATA      WDC_WD40EFRX-68N 0A82 WD-WCC7K3PU2YLY sas    3.6T root  disk  brw-rw----
+sdg  0:0:4:0    disk ATA      WDC_WD40EFRX-68N 0A82 WD-WCC7K3PU22HH sas    3.6T root  disk  brw-rw----
+sdh  0:0:5:0    disk ATA      WDC_WD40EFRX-68N 0A82 WD-WCC7K0CA4ZTL sas    3.6T root  disk  brw-rw----
+sdi  19:0:4:0   disk ATA      WDC_WD40EFRX-68W 0A82 WD-WCC4E6XJ71NH sas    3.6T root  disk  brw-rw----
+
+root@zamd:~# zpool replace t2 sda /dev/sdh
+
+root@zamd:~# zpool status
+  pool: t2
+ state: DEGRADED
+status: One or more devices is currently being resilvered.  The pool will
+	continue to function, possibly in a degraded state.
+action: Wait for the resilver to complete.
+  scan: resilver in progress since Tue Apr  5 11:48:37 2022
+	185G scanned at 2.26G/s, 98.1G issued at 1.20G/s, 7.81T total
+	0B resilvered, 1.23% done, 01:50:02 to go
+config:
+
+	NAME             STATE     READ WRITE CKSUM
+	t2               DEGRADED     0     0     0
+	  mirror-0       DEGRADED     0     0     0
+	    replacing-0  DEGRADED     0     0     0
+	      sda        DEGRADED   100     0   161  too many errors
+	      sdh        ONLINE       0     0 4.50K
+	    sdb          ONLINE       0     0     0
+	  mirror-1       ONLINE       0     0     0
+	    sdc          ONLINE       0     0     0
+	    sdd          ONLINE       0     0     0
+	  mirror-2       ONLINE       0     0     0
+	    sdf          ONLINE       0     0     0
+	    sdg          ONLINE       0     0     0
+
+errors: No known data errors

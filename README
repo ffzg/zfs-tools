@@ -117,3 +117,4 @@ perl -p -i -n -e 's/(\s+)daily/$1daily\n$1dateext/' /etc/logrotate.d/*
 List backups showing written which is real size of uncompressed data:
 
 zfs list -r -t all -o space,logicalreferenced,written,compressratio lib20/backup
+
