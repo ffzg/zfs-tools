@@ -23,6 +23,7 @@ my $debug = $ENV{DEBUG} || 0;
 ( $show_date, $show_size ) = ( 1,1 ) if ! defined $show_date && ! defined $show_size;
 
 my $pool = $ENV{ZFS_POOL} || `zpool list -H -o name`;
+chomp($pool);
 
 my @props = qw(
 name
@@ -38,7 +39,7 @@ logicalreferenced
 
 my $stat;
 
-open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool/backup $pool/diskrsync $pool/oscar $pool/oscar-zfs $pool/rack2");
+open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool");
 while(<$list>) {
 	chomp;
 	my @v = split(/\t/,$_);
@@ -50,7 +51,7 @@ while(<$list>) {
 	warn "# t = ", dump @t if $debug;
 
 	my $tags;
-	( $tags->{node}, undef, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t;
+	( $tags->{node}, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t[-5, -3, -2, -1 ];
 	if ( $#t == 3 ) {
 		$tags->{date} = $t[-1];
 		$tags->{disk} = 0;
