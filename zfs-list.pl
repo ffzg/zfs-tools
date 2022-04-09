@@ -6,6 +6,10 @@ use Getopt::Long;
 use English; # $UID
 use Data::Dump qw(dump);
 
+# this scripts lists all backups in following naming format:
+# pool/..ignored../instance/disk_nr@yyyy-mm-dd
+# pool/..ignored../instance@yyyy-mm-dd
+
 my $show_date;
 my $show_size;
 my $show_last;
@@ -52,6 +56,9 @@ while(<$list>) {
 
 	my $tags;
 	( $tags->{node}, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t[-5, -3, -2, -1 ];
+	if ( $tags->{disk} !~ m{^\d$} ) {
+		( $tags->{node}, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t[-3, -2], 0, $t[ -1 ];
+	}
 	if ( $#t == 3 ) {
 		$tags->{date} = $t[-1];
 		$tags->{disk} = 0;
