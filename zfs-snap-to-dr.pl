@@ -10,6 +10,7 @@ my $to_host   = shift @ARGV || 'srce01.net.ffzg.hr';
 my $to_pool   = shift @ARGV || 'srce01';
 
 my $dr_snaps_keep = $ENV{SNAPS_KEEP} || 7; # number of snapshots to keep on dr pool
+# use negative number to disable remote snapshots expiration
 my $debug = $ENV{DEBUG} || 0;
 
 sub cmd {
@@ -86,6 +87,7 @@ foreach my $fs ( sort keys %$from_snap ) {
 
 	foreach my $date ( @{ $to_snap->{$fs} } ) {
 		if ( $date lt $from_snap->{$fs}->[0]	# older than first snap to keep
+			&& $dr_snaps_keep > 0	# disable expiration with negative number
 			&& scalar @{ $to_snap->{$fs} } > $dr_snaps_keep # destination has too many snapshots
 		) {
 			cmd "ssh $to_host zfs destroy $to_pool/$fs\@$date";
