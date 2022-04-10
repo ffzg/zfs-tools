@@ -95,17 +95,20 @@ foreach my $fs ( sort keys %$from_snap ) {
 		}
 	}
 
+	my $v = '';
+	$v = '-v' if $debug;
+
 	foreach my $i ( 0 .. $#{ $from_snap->{$fs} } ) {
 		my $date = $from_snap->{$fs}->[$i];
 
 		if ( ! grep { /^$date$/ } @{ $to_snap->{$fs} } ) {
 			if ( $i == 0 ) { # full send if first one
-				cmd "zfs send $fs\@$date | ssh $to_host zfs receive -F $to_pool/$fs";
+				cmd "zfs send $v $fs\@$date | ssh $to_host zfs receive -F $to_pool/$fs";
 				refresh_to_snap;
 			} else {
 				my $first_date = $to_snap->{$fs}->[-1];
 				my $last_date  = $from_snap->{$fs}->[-1];
-				cmd "zfs send -I $first_date $fs\@$last_date | ssh $to_host zfs receive -F $to_pool/$fs";
+				cmd "zfs send $v -I $first_date $fs\@$last_date | ssh $to_host zfs receive -F $to_pool/$fs";
 				refresh_to_snap;
 			}
 		}
