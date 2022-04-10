@@ -29,14 +29,10 @@ sub list_snapshots {
 	my @s;
 	while(<$fh>) {
 		chomp;
-		if ( m/\@\d\d\d\d-\d\d-\d\d/ ) {
-			push @s, $_;
-		} else {
-			warn "SKIP $_ snapshot not in yyyy-mm-dd format\n";
-		}
+		push @s, $_;
 	}
 	close($fh);
-	return sort @s;
+	return @s;
 }
 
 
