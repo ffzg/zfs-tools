@@ -6,15 +6,16 @@ use autodie;
 use Data::Dump qw(dump);
 
 my $from_pool = shift @ARGV || 'lib15/oscar';
-my $to_host   = shift @ARGV || 'srce01.net.ffzg.hr';
+my $to_host   = shift @ARGV || 'srce01.net.ffzg.hr';	# localhost to skip ssh
 my $to_pool   = shift @ARGV || 'srce01';
 
-my $dr_snaps_keep = $ENV{SNAPS_KEEP} || 7; # number of snapshots to keep on dr pool
+my $dr_snaps_keep = $ENV{SNAPS_KEEP} || -1; # number of snapshots to keep on dr pool (unlimited)
 # use negative number to disable remote snapshots expiration
 my $debug = $ENV{DEBUG} || 0;
 
 sub cmd {
 	my $cmd = join(' ', @_);
+	$cmd =~ s/ssh localhost//g;
 	warn "# cmd: $cmd\n" if $debug;
 	system($cmd) == 0 or die "system $cmd failed: $?";
 }
@@ -22,7 +23,7 @@ sub cmd {
 sub list_snapshots {
 	my ($pool, $host) = @_;
 	my $ssh = '';
-	$ssh = "ssh $host" if $host;
+	$ssh = "ssh $host" if $host && $host ne 'localhost';
 
 	warn "# list_snapshots $host $pool\n" if $debug;
 	open(my $fh, '-|', "$ssh zfs list -H -r -o name -t snapshot $pool");
