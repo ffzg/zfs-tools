@@ -5,9 +5,9 @@ use autodie;
 
 use Data::Dump qw(dump);
 
-my $from_pool = shift @ARGV || 'lib15';
-my $to_host   = shift @ARGV || 'zamd.dhcp.ffzg.hr';	# localhost to skip ssh
-my $to_pool   = shift @ARGV || 'zamd/lib15';
+my $from_pool = shift @ARGV || 'zamd/lib10';
+my $to_host   = shift @ARGV || 'localhost';	# localhost to skip ssh
+my $to_pool   = shift @ARGV || 't3/zamd/lib10';
 
 my $debug = $ENV{DEBUG} || 1;
 my $v = '';
@@ -56,6 +56,14 @@ sub sync_snapshot {
 	#warn "# from = ",dump( $from );
 	#warn "# to = ",dump( $to );
 
+	if ( $#{$to} == -1 ) { # no desination snapshots, transfer everything
+		my $last = $from->[-1];
+		my $path = $last;
+		$path =~ s/\@.+$//;
+		cmd "zfs send $v -R $from_pool$last | ssh $to_host zfs receive -F -x mountpoint $to_pool$path";
+		return;
+	}
+
 	my $start;
 	my $end;
 
@@ -72,7 +80,7 @@ sub sync_snapshot {
 		}
 	}
 
-	die "can't find common snapshot beween $from_pool and $to_pool" unless $start;
+	die "can't find common snapshot beween $from_pool and $to_pool in ",dump( [ $from ], [ $to ] ) unless $start;
 
 	my $start_snap = $start;
 	$start_snap =~ s{^.+\@}{};
@@ -86,7 +94,9 @@ sub sync_snapshot {
 
 }
 
+
 my ( $from, $from_h ) = list( $from_pool, '',       '-r' );
+RE_READ_TO:
 my ( $to,   $to_h   ) = list( $to_pool,   $to_host, '-r' );
 
 warn "# from = ",dump( $from );
@@ -96,6 +106,7 @@ foreach my $i ( 0 .. $#{$from} ) {
 	if ( $from->[$i] eq $to->[$i] ) {
 		sync_snapshot( $from_pool . $from->[$i], $to_host, $to_pool . $to->[$i] );
 	} else {
-		die "FIXME $i $from->[$i] $to->[$i]";
+		cmd "zfs create $to_pool" . $from->[$i];
+		goto RE_READ_TO
 	}
 }
