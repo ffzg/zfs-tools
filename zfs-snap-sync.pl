@@ -53,8 +53,8 @@ sub sync_snapshot {
 	my ( $from, $from_h ) = list_snapshots( $from_pool );
 	my ( $to,   $to_h   ) = list_snapshots( $to_pool, $to_host );
 
-	warn "# from = ",dump( $from );
-	warn "# to = ",dump( $to );
+	#warn "# from = ",dump( $from );
+	#warn "# to = ",dump( $to );
 
 	my $start;
 	my $end;
@@ -81,7 +81,8 @@ sub sync_snapshot {
 
 	return if $start eq $end;
 
-	cmd "zfs send $v -I $start_snap $from_pool$end | ssh $to_host zfs receive $to_pool$end_path";
+	# FIXME -F shouldn't really be needed, but it is
+	cmd "zfs send $v -I $start_snap $from_pool$end | ssh $to_host zfs receive -F -x mountpoint $to_pool$end_path";
 
 }
 
