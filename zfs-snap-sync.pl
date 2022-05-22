@@ -5,9 +5,9 @@ use autodie;
 
 use Data::Dump qw(dump);
 
-my $from_pool = shift @ARGV || 'zamd/lib10';
+my $from_pool = shift @ARGV || 'zamd';
 my $to_host   = shift @ARGV || 'localhost';	# localhost to skip ssh
-my $to_pool   = shift @ARGV || 't3/zamd/lib10';
+my $to_pool   = shift @ARGV || 't3/zamd';
 
 my $debug = $ENV{DEBUG} || 1;
 my $v = '';
@@ -26,7 +26,7 @@ sub list {
 	$ssh = "ssh $host" if $host && $host ne 'localhost';
 	$type //= '';
 
-	warn "# list_snapshots $host $pool\n" if $debug;
+	warn "# list_snapshots $type $host $pool\n" if $debug;
 	open(my $fh, '-|', "$ssh zfs list -H -o name $type $pool");
 	my @s;
 	my $s;
@@ -55,6 +55,11 @@ sub sync_snapshot {
 
 	#warn "# from = ",dump( $from );
 	#warn "# to = ",dump( $to );
+
+	if ( $#{$from} == -1 ) {
+		warn "SKIPPED $from_pool, no snapshots";
+		return;
+	}
 
 	if ( $#{$to} == -1 ) { # no desination snapshots, transfer everything
 		my $last = $from->[-1];
@@ -96,17 +101,17 @@ sub sync_snapshot {
 
 
 my ( $from, $from_h ) = list( $from_pool, '',       '-r' );
-RE_READ_TO:
 my ( $to,   $to_h   ) = list( $to_pool,   $to_host, '-r' );
 
 warn "# from = ",dump( $from );
 warn "# to = ",dump( $to );
 
 foreach my $i ( 0 .. $#{$from} ) {
-	if ( $from->[$i] eq $to->[$i] ) {
-		sync_snapshot( $from_pool . $from->[$i], $to_host, $to_pool . $to->[$i] );
-	} else {
+	warn "XX $from->[$i]\n";
+
+	if ( ! exists( $to_h->{ $from->[$i] } ) ) {
 		cmd "zfs create $to_pool" . $from->[$i];
-		goto RE_READ_TO
 	}
+
+	sync_snapshot( $from_pool . $from->[$i], $to_host, $to_pool . $from->[$i] );
 }
