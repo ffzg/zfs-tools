@@ -5,13 +5,24 @@ use autodie;
 
 use Data::Dump qw(dump);
 
-my $from_pool = shift @ARGV || 'zamd';
-my $to_host   = shift @ARGV || 'localhost';	# localhost to skip ssh
-my $to_pool   = shift @ARGV || 't3/zamd';
+my ( $from, $to ) = @ARGV;
+
+die "Usage: $0 host1:pool1/fs1 host2:pool2/fs2\n" unless $from && $to;
+
+my ( $from_host, $from_pool ) = $from =~ m/:/ ? split(/:/, $from) : ( '', $from );
+my ( $to_host,   $to_pool   ) = $to   =~ m/:/ ? split(/:/, $to)   : ( '', $to );
 
 my $debug = $ENV{DEBUG} || 1;
 my $v = '';
 $v = '-v' if $debug;
+
+my $from_ssh = "ssh $from_host" if $from_host;
+my $to_ssh   = "ssh $to_host"   if $to_host;
+$from_ssh //= '';
+$to_ssh //= '';
+
+warn "# from $from_host : $from_pool [$from_ssh]";
+warn "# to $to_host : $to_pool [$to_ssh]";
 
 sub cmd {
 	my $cmd = join(' ', @_);
@@ -21,12 +32,12 @@ sub cmd {
 }
 
 sub list {
-	my ($pool, $host, $type) = @_;
+	my ($host, $pool, $type) = @_;
 	my $ssh = '';
 	$ssh = "ssh $host" if $host && $host ne 'localhost';
 	$type //= '';
 
-	warn "# list_snapshots $type $host $pool\n" if $debug;
+	warn "# list [$ssh] $host : $pool [ $type ]\n" if $debug;
 	open(my $fh, '-|', "$ssh zfs list -H -o name $type $pool");
 	my @s;
 	my $s;
@@ -41,17 +52,12 @@ sub list {
 	return ( [ @s ], $s );
 }
 
-sub list_snapshots {
-	my ($pool, $host) = @_;
-	return list( $pool, $host, '-t snapshot');
-}
-
 sub sync_snapshot {
-	my ( $from_pool, $to_host, $to_pool ) = @_;
+	my ( $from_host, $from_pool, $to_host, $to_pool ) = @_;
 	warn "# sync_snapshots $from_pool $to_host $to_pool\n";
 
-	my ( $from, $from_h ) = list_snapshots( $from_pool );
-	my ( $to,   $to_h   ) = list_snapshots( $to_pool, $to_host );
+	my ( $from, $from_h ) = list( $from_host, $from_pool, '-t snapshot' );
+	my ( $to,   $to_h   ) = list( $to_host,   $to_pool,   '-t snapshot' );
 
 	#warn "# from = ",dump( $from );
 	#warn "# to = ",dump( $to );
@@ -65,7 +71,7 @@ sub sync_snapshot {
 		my $last = $from->[-1];
 		my $path = $last;
 		$path =~ s/\@.+$//;
-		cmd "zfs send $v -R $from_pool$last | ssh $to_host zfs receive -F -x mountpoint $to_pool$path";
+		cmd "$from_ssh zfs send $v -R $from_pool$last | $to_ssh zfs receive -F -x mountpoint $to_pool$path";
 		return;
 	}
 
@@ -95,13 +101,13 @@ sub sync_snapshot {
 	return if $start eq $end;
 
 	# FIXME -F shouldn't really be needed, but it is
-	cmd "zfs send $v -I $start_snap $from_pool$end | ssh $to_host zfs receive -F -x mountpoint $to_pool$end_path";
+	cmd "$from_ssh zfs send $v -I $start_snap $from_pool$end | $to_ssh zfs receive -F -x mountpoint $to_pool$end_path";
 
 }
 
 
-my ( $from, $from_h ) = list( $from_pool, '',       '-r' );
-my ( $to,   $to_h   ) = list( $to_pool,   $to_host, '-r' );
+my ( $from, $from_h ) = list( $from_host, $from_pool, '-r' );
+my ( $to,   $to_h   ) = list( $to_host,   $to_pool,   '-r' );
 
 warn "# from = ",dump( $from );
 warn "# to = ",dump( $to );
@@ -110,8 +116,8 @@ foreach my $i ( 0 .. $#{$from} ) {
 	warn "XX $from->[$i]\n";
 
 	if ( ! exists( $to_h->{ $from->[$i] } ) ) {
-		cmd "zfs create $to_pool" . $from->[$i];
+		cmd "$to_ssh zfs create $to_pool" . $from->[$i];
 	}
 
-	sync_snapshot( $from_pool . $from->[$i], $to_host, $to_pool . $from->[$i] );
+	sync_snapshot( $from_host, $from_pool . $from->[$i], $to_host, $to_pool . $from->[$i] );
 }
