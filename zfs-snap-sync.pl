@@ -16,6 +16,8 @@ my $debug = $ENV{DEBUG} || 1;
 my $v = '';
 $v = '-v' if $debug;
 
+my $rate = $ENV{RATE} || '50M'; # XXX
+
 my $from_ssh = "ssh $from_host" if $from_host;
 my $to_ssh   = "ssh $to_host"   if $to_host;
 $from_ssh //= '';
@@ -29,6 +31,26 @@ sub cmd {
 	$cmd =~ s/ssh localhost//g;
 	warn "# cmd: $cmd\n" if $debug;
 	system($cmd) == 0 or die "system $cmd failed: $?";
+}
+
+sub cmd_pipe {
+	my ( $from_ssh, $from_cmd, $to_ssh, $to_cmd ) = @_;
+	my $cmd = '';
+	$from_cmd = "$from_cmd | lzop -c | mbuffer -r $rate";
+	$to_cmd =   "lzop -d | $to_cmd";
+	if ( $from_ssh ) {
+		$cmd = "$from_ssh '$from_cmd'";
+	} else {
+		$cmd = $from_cmd;
+	}
+	if ( $to_ssh ) {
+		$cmd .= " | $to_ssh '$to_cmd'";
+	} else {
+		$cmd .= " | $to_cmd";
+	}
+	warn "# cmd_pipe: $cmd\n" if $debug;
+	system($cmd) == 0 or die "system $cmd failed: $?";
+
 }
 
 sub list {
@@ -71,7 +93,7 @@ sub sync_snapshot {
 		my $last = $from->[-1];
 		my $path = $last;
 		$path =~ s/\@.+$//;
-		cmd "$from_ssh zfs send $v -R $from_pool$last | $to_ssh zfs receive -F -x mountpoint $to_pool$path";
+		cmd_pipe $from_ssh, "zfs send $v -R $from_pool$last", $to_ssh, "zfs receive -F -x mountpoint $to_pool$path";
 		return;
 	}
 
@@ -101,7 +123,7 @@ sub sync_snapshot {
 	return if $start eq $end;
 
 	# FIXME -F shouldn't really be needed, but it is
-	cmd "$from_ssh zfs send $v -I $start_snap $from_pool$end | $to_ssh zfs receive -F -x mountpoint $to_pool$end_path";
+	cmd_pipe $from_ssh, "zfs send $v -I $start_snap $from_pool$end", $to_ssh, "zfs receive -F -x mountpoint $to_pool$end_path";
 
 }
 
