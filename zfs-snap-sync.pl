@@ -60,7 +60,7 @@ sub list {
 	$type //= '';
 
 	warn "# list [$ssh] $host : $pool [ $type ]\n" if $debug;
-	open(my $fh, '-|', "$ssh zfs list -H -o name $type $pool");
+	open(my $fh, '-|', "$ssh zfs list -r -H -o name $type $pool");
 	my @s;
 	my $s;
 
@@ -89,14 +89,6 @@ sub sync_snapshot {
 		return;
 	}
 
-	if ( $#{$to} == -1 ) { # no desination snapshots, transfer everything
-		my $last = $from->[-1];
-		my $path = $last;
-		$path =~ s/\@.+$//;
-		cmd_pipe $from_ssh, "zfs send $v -R $from_pool$last", $to_ssh, "zfs receive -F -x mountpoint $to_pool$path";
-		return;
-	}
-
 	my $start;
 	my $end;
 
@@ -104,13 +96,26 @@ sub sync_snapshot {
 		my $i = $#{$to} - $_;
 		my $s = $to->[$i];
 		if ( exists $from_h->{$s} ) {
-			$start = $s;
-			$end   = $from->[-1];
-			warn "# got $start -- $end\n";
-			last;
+			my $e      = $from->[-1];
+			my $s_path = $s; $s_path =~ s{\@.+}{};
+			my $e_path = $e; $e_path =~ s{\@.+}{};
+			if ( $s_path eq $e_path ) {
+				$start = $s;
+				$end   = $e;
+				warn "# got $start -- $end\n";
+				last;
+			}
 		} else {
 			warn "SKIP $i $to_pool/$s missing\n";
 		}
+	}
+
+	if ( $#{$to} == -1 || ! $start ) { # no desination snapshots, transfer everything
+		my $last = $from->[-1];
+		my $path = $last;
+		$path =~ s/\@.+$//;
+		cmd_pipe $from_ssh, "zfs send $v -R $from_pool$last", $to_ssh, "zfs receive -F -x mountpoint $to_pool$path";
+		return;
 	}
 
 	die "can't find common snapshot beween $from_pool and $to_pool in ",dump( [ $from ], [ $to ] ) unless $start;
