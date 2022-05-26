@@ -16,7 +16,7 @@ my $debug = $ENV{DEBUG} || 1;
 my $v = '';
 $v = '-v' if $debug;
 
-my $rate = $ENV{RATE} || '50M'; # XXX
+my $rate = $ENV{RATE} || '40M'; # XXX
 
 my $from_ssh = "ssh $from_host" if $from_host;
 my $to_ssh   = "ssh $to_host"   if $to_host;
@@ -36,8 +36,8 @@ sub cmd {
 sub cmd_pipe {
 	my ( $from_ssh, $from_cmd, $to_ssh, $to_cmd ) = @_;
 	my $cmd = '';
-	$from_cmd = "$from_cmd | lzop -c | mbuffer -r $rate";
-	$to_cmd =   "lzop -d | $to_cmd";
+	$from_cmd = "$from_cmd | zstd | mbuffer -s 128k -R $rate";
+	$to_cmd =   "zstd -d | $to_cmd";
 	if ( $from_ssh ) {
 		$cmd = "$from_ssh '$from_cmd'";
 	} else {
