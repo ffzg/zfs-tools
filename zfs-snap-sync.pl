@@ -17,6 +17,7 @@ my $v = '';
 $v = '-v' if $debug;
 
 my $rate = $ENV{RATE} || '40M'; # XXX
+my $exclude = $ENV{EXCLUDE} || '/clone/'; # FIXME
 
 my $from_ssh = "ssh $from_host" if $from_host;
 my $to_ssh   = "ssh $to_host"   if $to_host;
@@ -66,6 +67,7 @@ sub list {
 
 	while(<$fh>) {
 		chomp;
+		next if m{$exclude};
 		s/^$pool//;
 		push @s, $_;
 		$s->{ $_ } = $#s;
