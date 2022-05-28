@@ -116,6 +116,11 @@ sub sync_snapshot {
 		my $last = $from->[-1];
 		my $path = $last;
 		$path =~ s/\@.+$//;
+
+		if ( ! exists( $to_h->{ $path } ) ) {
+			cmd "$to_ssh zfs create -p $to_pool" . $path;
+		}
+
 		cmd_pipe $from_ssh, "zfs send $v -R $from_pool$last", $to_ssh, "zfs receive -F -x mountpoint $to_pool$path";
 		return;
 	}
