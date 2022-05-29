@@ -75,7 +75,7 @@ sub list {
 		push @s, $_;
 		$s->{ $_ } = $#s;
 	}
-	close($fh);
+	#close($fh); # FIXME it target doesn't exists, don't die
 	return ( [ @s ], $s );
 }
 
@@ -116,7 +116,7 @@ sub sync_snapshot {
 	}
 
 	if ( $#{$to} == -1 || ! $start ) { # no desination snapshots, transfer everything
-		my $last = $from->[-1];
+		my $last = $from->[0];
 		my $path = $last;
 		$path =~ s/\@.+$//;
 
@@ -151,10 +151,6 @@ warn "# to = ",dump( $to );
 
 foreach my $i ( 0 .. $#{$from} ) {
 	warn "XX $from->[$i]\n";
-
-	if ( ! exists( $to_h->{ $from->[$i] } ) ) {
-		cmd "$to_ssh zfs create $to_pool" . $from->[$i];
-	}
 
 	sync_snapshot( $from_host, $from_pool . $from->[$i], $to_host, $to_pool . $from->[$i] );
 }
