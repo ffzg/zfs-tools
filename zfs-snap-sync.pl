@@ -12,7 +12,7 @@ die "Usage: $0 host1:pool1/fs1 host2:pool2/fs2\n" unless $from && $to;
 my ( $from_host, $from_pool ) = $from =~ m/:/ ? split(/:/, $from) : ( '', $from );
 my ( $to_host,   $to_pool   ) = $to   =~ m/:/ ? split(/:/, $to)   : ( '', $to );
 
-my $debug = $ENV{DEBUG} || 1;
+my $debug = $ENV{DEBUG} || 0;
 my $v = '';
 $v = '-v' if $debug;
 
@@ -84,10 +84,9 @@ sub sync_snapshot {
 	warn "# sync_snapshots $from_pool $to_host $to_pool\n";
 
 	my ( $from, $from_h ) = list( $from_host, $from_pool, '-t snapshot' );
+	warn "# from = ",dump( $from ) if $debug;
 	my ( $to,   $to_h   ) = list( $to_host,   $to_pool,   '-t snapshot' );
-
-	#warn "# from = ",dump( $from );
-	#warn "# to = ",dump( $to );
+	warn "# to = ",dump( $to ) if $debug;
 
 	if ( $#{$from} == -1 ) {
 		warn "SKIPPED $from_pool, no snapshots";
@@ -115,12 +114,12 @@ sub sync_snapshot {
 		}
 	}
 
-	if ( $#{$to} == -1 || ! $start ) { # no desination snapshots, transfer everything
+	if ( $#{$to} == -1 ) { # no desination snapshots, transfer everything
 		my $last = $from->[0];
 		my $path = $last;
 		$path =~ s/\@.+$//;
 
-		if ( ! exists( $to_h->{ $path } ) ) {
+		if ( ! exists( $to_h->{ $last } ) ) {
 			cmd "$to_ssh zfs create -p $to_pool" . $path;
 		}
 
@@ -144,12 +143,12 @@ sub sync_snapshot {
 
 
 my ( $from, $from_h ) = list( $from_host, $from_pool, '-r' );
+warn "# from = ",dump( $from ) if $debug;
 my ( $to,   $to_h   ) = list( $to_host,   $to_pool,   '-r' );
-
-warn "# from = ",dump( $from );
-warn "# to = ",dump( $to );
+warn "# to = ",dump( $to ) if $debug;
 
 foreach my $i ( 0 .. $#{$from} ) {
+	next if $from->[$i] eq ''; # FIXME don't try to sync whole pool
 	warn "XX $from->[$i]\n";
 
 	sync_snapshot( $from_host, $from_pool . $from->[$i], $to_host, $to_pool . $from->[$i] );
