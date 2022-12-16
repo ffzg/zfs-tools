@@ -1,8 +1,11 @@
 #!/bin/sh -e
 
 clone=/zamd/clone/deenes.ffzg.hr-0-2022-12-16
+if [ -e etc/os-release ] ; then
+	clone=$(pwd)
+fi
 
-instance=$( echo $clone | cut -d/ -f4 | sed 's/-0-.*$//' )
+instance=$( basename $clone | sed 's/-0-.*$//' )
 hostname=$( cat $clone/etc/hostname | sed 's/^CLONE-//' )
 hostname_s=$( echo $hostname | cut -d. -f1 | cut -d- -f1 )
 
