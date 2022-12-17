@@ -16,7 +16,7 @@ my $debug = $ENV{DEBUG} || 0;
 my $v = '';
 $v = '-v' if $debug;
 
-my $rate = $ENV{RATE} || '40M'; # XXX
+my $rate = $ENV{RATE} || '100M'; # XXX
 my $exclude = $ENV{EXCLUDE} || '/clone/'; # FIXME
 
 my $from_ssh = "ssh $from_host" if $from_host;
@@ -39,7 +39,8 @@ sub cmd_pipe {
 	my $cmd = '';
 	# use compression and mbuffer only if over network
 	if ( $from_ssh || $to_ssh ) {
-		$from_cmd = "$from_cmd | zstd | mbuffer -s 128k -R $rate";
+		$from_cmd = "$from_cmd | zstd";
+		#$from_cmd .= " | mbuffer -s 128k -R $rate"; ## XXX remove mbuffer
 		$to_cmd =   "zstd -d | $to_cmd";
 	}
 	if ( $from_ssh ) {
