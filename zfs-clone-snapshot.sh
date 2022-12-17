@@ -16,19 +16,19 @@ test -z "$snapshot" && echo "Usage: $0 zfs-snapshot" && exit 1
 sudo zfs list -H -t snapshot -o name $snapshot | while read snapshot ; do
 	echo "# clone $snapshot"
 	clone=$( echo $snapshot | sed -e 's,^.*/backup/,,' -e 's,^.*/oscar/,,' -e 's,/\([0-9]*\)@,-\1-,' )
-	sudo zfs clone $snapshot $pool/clone/$clone
+	sudo zfs clone $snapshot $pool/clone/$clone || true
 
 	# prefix hostname with CLONE-
-	echo CLONE-$clone.local > $pool/clone/$clone/etc/hostname
-	echo 127.0.0.3 CLONE-$clone.local >> $pool/clone/$clone/etc/hosts
+	echo CLONE-$clone.local > /$pool/clone/$clone/etc/hostname
+	echo 127.0.0.3 CLONE-$clone.local >> /$pool/clone/$clone/etc/hosts
 
-	i_sh=$pool/clone/$clone/i.sh
+	i_sh=/$pool/clone/$clone/i.sh
 	cat <<__SHELL__ > $i_sh
 #!/bin/sh -xe
 	apt remove -y acpid
 __SHELL__
 	chmod 755 $i_sh
-	echo "EXECUTE in shell # ./$i_sh"
+	echo "EXECUTE in shell # /i.sh"
 
 	systemd-nspawn --directory /$pool/clone/$clone
 done
