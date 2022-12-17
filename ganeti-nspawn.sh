@@ -15,7 +15,7 @@ grep link: /zamd/ganeti/*-instances/$instance  | cut -d: -f2 | cat -n | tee /dev
 #cat /dev/shm/deenes.ffzg.hr.br | awk '{ print $2 }' | xargs -i sh -cx 'brctl show {} || brctl addbr {}'
 
 grep -A 3 auto $clone/etc/network/interfaces \
-	| grep -E '(auto eth|bridge_ports)' | cut -d' ' -f2 | cat -n | tee /dev/shm/$instance.eth
+	| grep -E '(auto eth|bridge_ports)' | cut -d' ' -f2 | cut -d: -f1 | cat -n | tee /dev/shm/$instance.eth
 
 echo -n "systemd-nspawn --directory /$clone \$@ " > /dev/shm/$instance.nspawn
 
