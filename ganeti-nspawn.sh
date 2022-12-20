@@ -22,10 +22,11 @@ grep link: /zamd/ganeti/*-instances/$instance  | cut -d: -f2 | cat -n | tee /dev
 grep -A 3 auto $clone/etc/network/interfaces \
 	| grep -E '(auto eth|bridge_ports)' | cut -d' ' -f2 | cut -d: -f1 | cat -n | tee /dev/shm/$instance.eth
 
-echo -n "systemd-nspawn --directory /$clone \$@ " > /dev/shm/$instance.nspawn
+echo -n "systemd-nspawn --directory /$clone --hostname=\"$hostname\" \$@ " > /dev/shm/$instance.nspawn
 
 join /dev/shm/$instance.br /dev/shm/$instance.eth | tee /dev/shm/$instance.nettwork \
 	| awk -v hostname=$hostname_if '{ print "--network-veth-extra "hostname"-"$2":"$3 }' | xargs echo >> /dev/shm/$instance.nspawn
 
 chmod 755 /dev/shm/$instance.nspawn
-sh -x /dev/shm/$instance.nspawn
+ls -al /dev/shm/$instance.nspawn 
+sh -x /dev/shm/$instance.nspawn $@
