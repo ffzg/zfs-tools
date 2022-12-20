@@ -1,6 +1,10 @@
 #!/bin/sh -e
 
-ip link | grep DOWN | grep -- -br | cut -d: -f2 | while read link ; do
+# Usage: /srv/zfs-tools/ganeti-bridge.sh [pattern]
+
+test -z "$1" && grep=DOWN || grep=$1
+
+ip link | grep $grep | grep -- -br | cut -d: -f2 | while read link ; do
 	if=$( echo $link | cut -d@ -f1 )
 	br=$( echo $if | cut -d- -f2 )
 	echo "# $link -> $br $if"
