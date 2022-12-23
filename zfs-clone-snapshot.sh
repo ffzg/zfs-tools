@@ -19,8 +19,8 @@ sudo zfs list -H -t snapshot -o name $snapshot | while read snapshot ; do
 	sudo zfs clone $snapshot $pool/clone/$clone || true
 
 	# prefix hostname with CLONE-
-	echo CLONE-$clone.local > /$pool/clone/$clone/etc/hostname
-	echo 127.0.0.3 CLONE-$clone.local >> /$pool/clone/$clone/etc/hosts
+	#echo CLONE-$clone.local > /$pool/clone/$clone/etc/hostname
+	#echo 127.0.0.3 CLONE-$clone.local >> /$pool/clone/$clone/etc/hosts
 
 	i_sh=/$pool/clone/$clone/i.sh
 	cat <<__SHELL__ > $i_sh
