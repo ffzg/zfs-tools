@@ -20,7 +20,7 @@ while [ $( brctl show | grep $hostname_if | wc -l ) -gt 1 ] ; do
 	hostname_if=${hostname_if}_
 done
 
-grep link: /zamd/ganeti/*-instances/$instance*  | cut -d: -f2 | cat -n | tee /dev/shm/$instance.br
+grep link: /zamd/ganeti/*-instances/$instance*  | cut -d: -f3 | cat -n | tee /dev/shm/$instance.br
 
 # add bridges
 #cat /dev/shm/deenes.ffzg.hr.br | awk '{ print $2 }' | xargs -i sh -cx 'brctl show {} || brctl addbr {}'
