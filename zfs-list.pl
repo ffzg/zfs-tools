@@ -57,7 +57,7 @@ while(<$list>) {
 	my $tags;
 	( $tags->{node}, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t[-5, -3, -2, -1 ];
 	if ( $tags->{disk} !~ m{^\d$} ) {
-		( $tags->{node}, $tags->{instance}, $tags->{disk}, $tags->{date} ) = @t[-3, -2], 0, $t[ -1 ];
+		( $tags->{node}, $tags->{instance}, $tags->{disk}, $tags->{date} ) = ( @t[-3, -2], 0, $t[ -1 ] );
 	}
 	if ( $#t == 3 ) {
 		$tags->{date} = $t[-1];
@@ -114,7 +114,7 @@ $last = $#dates if $last > $#dates; # limit just to existing backups
 sub unique_splice {
 	my ( $array, $from ) = @_;
 	my %u;
-	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } @$array;
+	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } sort @$array;
 }
 
 open(my $csv, '>', "/dev/shm/backups-$UID.csv");
