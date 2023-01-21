@@ -14,7 +14,7 @@ my ( $to_host,   $to_pool   ) = $to   =~ m/:/ ? split(/:/, $to)   : ( '', $to );
 
 my $debug = $ENV{DEBUG} || 0;
 my $v = '';
-$v = '-v' if $debug;
+$v = '-v' if $ENV{VERBOSE} || $debug;
 
 my $rate = $ENV{RATE} || '100M'; # XXX
 my $exclude = $ENV{EXCLUDE} || '/clone/'; # FIXME
