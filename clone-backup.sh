@@ -9,11 +9,13 @@ clone="$pool/clone/$instance-$( basename $snap | sed 's/@/-/g' )"
 zfs clone $snap $clone
 echo "$instance-clone" > /$clone/etc/hostname
 
-echo "auto mv-bond0.60"            >> /$clone/etc/network/interfaces
-echo "iface mv-bond0.60 inet dhcp" >> /$clone/etc/network/interfaces
+if=$( ip route | grep default | awk '{ print $5 }' )
+
+echo "auto mv-$if"            >> /$clone/etc/network/interfaces
+echo "iface mv-$if inet dhcp" >> /$clone/etc/network/interfaces
 
 perl -p -i -n -e 's/(listen )193.*:(\d+)/$1 $2/' /$clone/etc/nginx/sites-available/*
 
-systemd-nspawn --boot --network-macvlan=bond0.60 --directory /$clone
+systemd-nspawn --boot --network-macvlan=$if --directory /$clone
 
 echo "destroy with: zfs destroy $clone"
