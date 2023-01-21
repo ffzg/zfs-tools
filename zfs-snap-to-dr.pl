@@ -30,6 +30,10 @@ sub list_snapshots {
 	my @s;
 	while(<$fh>) {
 		chomp;
+		if ( ! m/\@\d\d\d\d-\d\d-\d\d/ ) {
+			warn "IGNORE snapshot $_";
+			next;
+		}
 		push @s, $_;
 	}
 	close($fh);
