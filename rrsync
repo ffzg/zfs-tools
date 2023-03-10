@@ -17,7 +17,7 @@ use autodie;
 # You may configure these values to your liking.  See also the section
 # of options if you want to disable any options that rsync accepts.
 use constant RSYNC => '/usr/bin/rsync';
-use constant LOGFILE => '/var/log/rrsync.log';
+use constant LOGFILE => '/zamd/log/rrsync.log';
 
 my $Usage = <<EOM;
 Use 'command="$0 [-ro|-wo] SUBDIR"'
@@ -222,7 +222,7 @@ die "$0: invalid rsync-command syntax or options\n" if $in_options;
 @args = ( '.' ) if !@args;
 
 # XXX dpavlin added transfer log
-push @opts, '--log-file=/var/log/rrsync-transfer.log';
+push @opts, '--log-file=/zamd/log/rrsync-transfer.log';
 push @opts, "--log-file-format=%o $subdir %f %l";
 
 
@@ -232,6 +232,7 @@ if ($write_log) {
   $host =~ s/ .*//; # Keep only the client's IP addr
   $host =~ s/^::ffff://;
   $host = gethostbyaddr(inet_aton($host),AF_INET) || $host;
+  # XXX add date yyyy-mm-dd
   printf LOG "%02d:%02d %-13s [%s]\n", $hh, $mm, $host, "@opts @args";
   close LOG;
 }

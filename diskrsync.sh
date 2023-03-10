@@ -5,7 +5,7 @@
 zpool=`sudo zpool list -H -o name | head -1`
 
 # to work with ganeti masterfailover we need to ignore host key
-ssh_o='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ssh_o='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /zamd/ganeti/ssh/id_rsa-diskrsync'
 ssh="ssh $ssh_o"
 
 backup() {
@@ -42,21 +42,11 @@ done
 
 }
 
-if [ "$zpool" = "lib15" ] ; then
 
 	backup oscar.gnt.ffzg.hr oscarvg kappa.ffzg.hr 0
 	backup cluster.gnt.ffzg.hr ffzgvg theta.ffzg.hr 0
-
-	zfs list -t snapshot -r $zpool/diskrsync
-
-elif [ "$zpool" = "lib20" ] ; then
-
 	backup cluster.gnt.ffzg.hr ffzgvg safeq 0
 	backup cluster.gnt.ffzg.hr ffzgvg electra.ffzg.hr 0
 
 	zfs list -t snapshot -r $zpool/diskrsync
 
-else
-	echo "Unknown pool [$zpool] edit script to add config"
-	exit 1
-fi

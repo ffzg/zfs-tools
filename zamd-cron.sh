@@ -2,11 +2,16 @@
 
 cd /srv/zfs-tools
 
-(
-./zfs-snap-sync.pl lib10:lib10 zamd/lib10
-./zfs-snap-sync.pl lib15:lib15 zamd/lib15
-./zfs-snap-sync.pl lib20:lib20 zamd/lib20
-2>&1 ) | tee /tmp/sync.log
+/srv/zfs-tools/zamd-ganeti-backup.sh
 
+/srv/zfs-tools/diskrsync.sh
+
+# rotate logs
+ls /zamd/log/*.log | while read $logfile ; do
+	mv $logfile $logfile-$( date +%Y-%m-%d )
+done
 
 /srv/zfs-tools/zfs-list.pl | tee /dev/shm/zfs-list.txt
+
+SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl zamd/oscar/dataverse srce01.net.ffzg.hr srce01
+SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl zamd/oscar/koha.ffzg.hr srce01.net.ffzg.hr srce01
