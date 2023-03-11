@@ -159,7 +159,8 @@ if ($short_disabled ne '') {
 $short_no_arg = "[$short_no_arg]" if length($short_no_arg) > 1;
 $short_with_num = "[$short_with_num]" if length($short_with_num) > 1;
 
-my $write_log = -f LOGFILE && open(LOG, '>>', LOGFILE);
+#my $write_log = -f LOGFILE && open(LOG, '>>', LOGFILE);
+my $write_log = 0;
 
 chdir($subdir) or die "$0: Unable to chdir to restricted dir: $!\n";
 
@@ -221,9 +222,16 @@ die "$0: invalid rsync-command syntax or options\n" if $in_options;
 
 @args = ( '.' ) if !@args;
 
+my $instance = $subdir;
+$instance =~ s{^.*/([^/]+)/?$}{$1};
+my $log_path = "/zamd/log/rrsync/";
+mkdir $log_path unless -e $log_path;
+$log_path .= $instance;
+mkdir $log_path unless -e $log_path;
+
 # XXX dpavlin added transfer log
-push @opts, '--log-file=/zamd/log/rrsync-transfer.log';
-push @opts, "--log-file-format=%o $subdir %f %l";
+push @opts, "--log-file=$log_path/" . strftime("%Y-%m-%d", localtime);
+#push @opts, "--log-file-format=%o $subdir %f %l";
 
 
 if ($write_log) {
