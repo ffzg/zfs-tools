@@ -3,6 +3,7 @@
 # https://github.com/dop251/diskrsync
 
 zpool=`sudo zpool list -H -o name | head -1`
+zpool=zamd
 
 # to work with ganeti masterfailover we need to ignore host key
 ssh_o='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i /zamd/ganeti/ssh/id_rsa-diskrsync'
