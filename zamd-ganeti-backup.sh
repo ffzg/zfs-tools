@@ -21,4 +21,4 @@ done
 
 sh -x /dev/shm/backup.today.sh
 
-test -s /dev/shm/backup.errors && mail -s "zamd backup errors" dpavlin+zamd@ffzg.hr < /dev/shm/backup.errors 
+test -s /dev/shm/backup.errors && mail -s "zamd backup errors" dpavlin+zamd@ffzg.hr,dpavlin+zamd@zamd.ffzg.hr < /dev/shm/backup.errors 
