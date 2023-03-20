@@ -1,6 +1,12 @@
 #!/bin/sh -e
 
 # Usage: /srv/zfs-tools/ganeti-bridge.sh [pattern]
+# /srv/zfs-tools/ganeti-bridge.sh monitor
+
+if [ "$1" = "monitor" ] ; then
+	udevadm monitor -k /devices/virtual/net | grep --line-buffered -v /queues/ | grep --line-buffered 'add .*br' | xargs -i $0
+	exit 1
+fi
 
 test -z "$1" && grep=DOWN || grep=$1
 
