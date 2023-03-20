@@ -29,6 +29,8 @@ sudo zfs list -H -t snapshot -o name $snapshot | while read snapshot ; do
 __SHELL__
 	chmod 755 $i_sh
 
+	cp -rpv clone-instance/* /$pool/clone/$clone/
+
 	systemd-nspawn --directory /$pool/clone/$clone /i.sh
 
 	echo "## cd /$pool/clone/$clone ; /srv/zfs-tools/ganeti-nspawn.sh --boot"
