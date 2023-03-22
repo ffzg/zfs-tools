@@ -1,6 +1,5 @@
 #!/bin/sh -e
 
-clone=/zamd/clone/deenes.ffzg.hr-0-2022-12-16
 if [ -e etc/os-release ] ; then
 	clone=$(pwd)
 fi
@@ -12,6 +11,8 @@ basename $clone > $clone/etc/hostname.dir
 #echo cp ~dpavlin/ssl-expire-verify.sh $clone/root/
 
 instance=$( basename $clone | sed 's/-0-.*$//' )
+# strip date from instance name without disk number
+instance=$( basename $instance | sed 's/-20[0-9][0-9]-.*$//' )
 hostname=$( cat $clone/etc/hostname | sed 's/^CLONE-//' )
 # just start of hostname for interface prefix
 hostname_if=$( echo $hostname | cut -d. -f1 | cut -d- -f1 )
@@ -43,5 +44,6 @@ join /dev/shm/$instance.br /dev/shm/$instance.eth | tee /dev/shm/$instance.netwo
 	| awk -v hostname=$hostname -v if_name=$( echo $hostname | head -c 8 ) '{ print "--network-veth-extra "if_name"-"$2":"$3 }' | xargs echo >> /dev/shm/$instance.nspawn
 
 chmod 755 /dev/shm/$instance.nspawn
-ls -al /dev/shm/$instance.nspawn 
+ls -al /dev/shm/$instance.nspawn
+
 sh -x /dev/shm/$instance.nspawn $@
