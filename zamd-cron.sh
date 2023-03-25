@@ -4,7 +4,8 @@ cd /srv/zfs-tools
 
 /srv/zfs-tools/zamd-ganeti-backup.sh
 
-/srv/zfs-tools/fix-permission-denied.sh
+# moved to rsync-ganeti.sh
+#/srv/zfs-tools/fix-permission-denied.sh
 
 /srv/zfs-tools/diskrsync.sh
 
