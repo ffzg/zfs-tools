@@ -29,7 +29,12 @@ sudo zfs list -H -t snapshot -o name $snapshot | while read snapshot ; do
 __SHELL__
 	chmod 755 $i_sh
 
-	cp -rpv clone-instance/* /$pool/clone/$clone/
+	cp -rpv /srv/zfs-tools/clone-instance/* /$pool/clone/$clone/
+
+	cd /$pool/clone/$clone/
+	# modify shell prompt to include CLONE
+	echo 'PS1="CLONE $PS1"' >> root/.bashrc
+	echo 'PS1="CLONE $PS1"' >> home/dpavlin/.bashrc
 
 	systemd-nspawn --directory /$pool/clone/$clone /i.sh
 
