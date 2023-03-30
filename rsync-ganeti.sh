@@ -26,6 +26,7 @@ test -d /zamd/log/rsync/$instance || mkdir -p /zamd/log/rsync/$instance
 
 		if rsync -raHXAz --numeric-ids --inplace --delete $rsync_args \
 			--log-file=/zamd/log/rsync/$instance/$today \
+			--log-file-format="%i %n%L %b %l" \
 			$rsync_from /zamd/$cluster/$instance/$disk/ 2>&1
 			then
 				zfs snap zamd/$cluster/$instance/$disk@$today
