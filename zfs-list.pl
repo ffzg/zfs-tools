@@ -119,6 +119,8 @@ sub unique_splice {
 
 open(my $csv, '>', "/dev/shm/backups-$UID.csv");
 
+my $dates;
+
 foreach my $instance (sort keys %{ $stat->{backups} }) {
 	my $date;
 	my @backup_dates = unique_splice( $stat->{backups}->{$instance}, $dates[$#dates - $last]);
@@ -127,6 +129,7 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 	foreach my $i ( $#dates - $last .. $#dates ) {
 		my $col = $dates[$i];
 		$date ||= shift @backup_dates;
+		$dates->{$date}++;
 		#warn "# $instance $col ? $date\n";
 		if ( ! $date || $col lt $date ) {
 			push @line, ' ' x length($col) if $show_date;
@@ -142,6 +145,25 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 	push @line, sprintf("%-${longest_instance}s", $instance);
 	print join(' ',@line), "\n";
 
+}
+
+close($csv);
+
+open(my $csv, '>', "/dev/shm/backups-instances.csv");
+
+my @instances = sort keys %{ $stat->{backups} };
+my @dates     = sort keys %$dates;
+
+print $csv join(',', 'date', @instances ), "\n";
+foreach my $date ( @dates ) {
+
+	my @v = ( $date );
+
+	foreach my $instance ( @instances ) {
+		push @v, $stat->{size}->{$instance}->{$date};
+	}
+
+	print $csv join(',', @v), "\n";
 }
 
 close($csv);
