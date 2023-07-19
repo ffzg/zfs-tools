@@ -117,7 +117,8 @@ sub unique_splice {
 	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } sort @$array;
 }
 
-open(my $csv, '>', "/dev/shm/backups-$UID.csv");
+open(my $out, '>', "/dev/shm/$pool-list.txt");
+open(my $csv, '>', "/dev/shm/$pool.backups.csv");
 
 my $dates;
 
@@ -143,13 +144,13 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 		}
 	}
 	push @line, sprintf("%-${longest_instance}s", $instance);
-	print join(' ',@line), "\n";
+	print $out join(' ',@line), "\n";
 
 }
 
 close($csv);
 
-open(my $csv, '>', "/dev/shm/backups-instances.csv");
+open(my $csv, '>', "/dev/shm/$pool-instances.csv");
 
 my @instances = sort keys %{ $stat->{backups} };
 my @dates     = sort keys %$dates;
@@ -176,6 +177,6 @@ if ( $show_size ) {
 		push @line, sprintf("%8s =",join('/', $stat->{backup_count}->{$col}, $#{$stat->{date_disks}->{$col}}+1)) if $show_date;
 		push @line, h_size($stat->{date_size}->{$col}) if $show_size;
 	}
-	print join(' ',@line),"\n";
+	print $out join(' ',@line),"\n";
 
 }
