@@ -13,6 +13,6 @@ cd /srv/zfs-tools
 
 ZFS_POOL=zamd /srv/zfs-tools/zfs-list.pl | tee /dev/shm/zfs-list.txt
 
-SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl zamd/oscar/dataverse srce01.net.ffzg.hr srce01
-SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl zamd/oscar/koha.ffzg.hr srce01.net.ffzg.hr srce01
+SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl zamd/oscar/dataverse srce02.net.ffzg.hr srce02
+SNAPS_KEEP=90 /srv/zfs-tools/zfs-snap-to-dr.pl zamd/oscar/koha.ffzg.hr srce02.net.ffzg.hr srce02
 
