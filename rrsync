@@ -231,7 +231,7 @@ mkdir $log_path unless -e $log_path;
 
 # XXX dpavlin added transfer log
 push @opts, "--log-file=$log_path/" . strftime("%Y-%m-%d", localtime);
-push @opts, '--log-file-format="%i %n%L %b %l"';
+push @opts, '--log-file-format=%i %n%L %b %l';
 
 
 if ($write_log) {
