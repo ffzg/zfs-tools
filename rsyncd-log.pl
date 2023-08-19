@@ -19,12 +19,14 @@ while(<>) {
 
 	# 2023/08/15 06:30:37 [914596] "*deleting   home/dpavlin/.cache/mozilla/firefox/pf7sl99z.Default User/cache2/entries/B1C52648EB7985A20F46A8BD48539968FC56323E 0 0"
 	# 2023/08/18 08:28:12 [1293935] ">f.st...... var/log/libvirt/qemu/homeassistant.log 116371 1989493"
-	if ( s/"(\S+)\s(.+)\s(\d+)\s(\d+)"$// ) {
-		( $op, $path, $size, $transfer ) = ( $1,$2,$3,$4 );
-	} elsif ( $#v == 6 ) {
-		# ok
-	} elsif ( 0 && s/(\S+)\s(.+)\s(\d+)\s(\d+)$// ) {
-		( $op, $path, $size, $transfer ) = ( $1,$2,$3,$4 );
+	if ( $#v == 6 ) {
+		# nop
+	} elsif ( $#v > 6 ) {
+		my @v3 = splice(@v, 4);
+		$transfer = pop @v3;
+		$size     = pop @v3;
+		$path     = join(' ', @v3); # re-create path with spaces
+		warn "XXX $path | $size" if $debug >= 2;
 	} else {
 		warn "SKIP $#v: [$_]\n" if $debug;
 		next;
