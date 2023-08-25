@@ -63,6 +63,12 @@ while(<$list>) {
 		$tags->{date} = $t[-1];
 		$tags->{disk} = 0;
 	}
+
+	# XXX special case - accumulate all snapshots below
+	if ( $h{name} =~ m{zamd/mglavica/mlinz} ) {
+		( $tags->{instance}, $tags->{disk}, $tags->{date} ) = ( 'mlin', 0, $t[-1] );
+	}
+
 	warn "# tags = ",dump($tags) if $debug;
 
 	if ( $tags->{date} !~ m/^\d\d\d\d-\d\d-\d\d$/ ) {
@@ -117,6 +123,8 @@ sub unique_splice {
 	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } sort @$array;
 }
 
+$pool =~ s{/}{_}g if $pool =~ m{/};
+
 open(my $out, '>', "/dev/shm/$pool-list.txt");
 open(my $csv, '>', "/dev/shm/$pool.backups.csv");
 
@@ -145,6 +153,7 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 	}
 	push @line, sprintf("%-${longest_instance}s", $instance);
 	print $out join(' ',@line), "\n";
+	print join(' ',@line), "\n";
 
 }
 
@@ -178,5 +187,6 @@ if ( $show_size ) {
 		push @line, h_size($stat->{date_size}->{$col}) if $show_size;
 	}
 	print $out join(' ',@line),"\n";
+	print join(' ',@line),"\n";
 
 }
