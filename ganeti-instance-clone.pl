@@ -103,3 +103,6 @@ sub append_to {
 
 append_to 'PS1="CLONE $PS1"' => 'root/.bashrc';
 append_to 'PS1="CLONE $PS1"' => 'home/dpavlin/.bashrc';
+
+system "systemd-nspawn --directory /$clone apt-get remove -y acpid";
+
