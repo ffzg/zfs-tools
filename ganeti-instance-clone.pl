@@ -101,8 +101,11 @@ sub append_to {
 	}
 }
 
-append_to 'PS1="CLONE $PS1"' => 'root/.bashrc';
-append_to 'PS1="CLONE $PS1"' => 'home/dpavlin/.bashrc';
+append_to 'PS1="'.$date.' $PS1"' => 'root/.bashrc';
+append_to 'PS1="'.$date.' $PS1"' => 'home/dpavlin/.bashrc';
 
 system "systemd-nspawn --directory /$clone apt-get remove -y acpid";
+
+print "# boot instance with:\n";
+print "cd /$clone ; /srv/zfs-tools/ganeti-nspawn.sh --boot\n";
 
