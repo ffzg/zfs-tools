@@ -6,6 +6,7 @@ use YAML;
 use Data::Dump qw(dump);
 
 my $instance = $ARGV[0];
+my $restore_date = $ARGV[1];
 
 my @i = glob "/zamd/ganeti/*-instances/$instance*";
 
@@ -25,7 +26,7 @@ print "disks: $#$disks\n";
 my @disks_glob = grep { ! m{/clone/} } glob "/zamd/*/$instance*/[0-9]";
 
 if ( $#disks_glob != $#$disks ) {
-	die "ERROR: ",dump( \@disks_glob, $disks );
+	warn "ERROR: not all disks found in backup ",dump( \@disks_glob, $disks );
 }
 
 print "disks_glob: @disks_glob\n";
@@ -51,9 +52,16 @@ open(my $zfs_snapshots, '-|', "zfs list -t snapshot -o name -H $path");
 chomp(my @snapshots = <$zfs_snapshots>);
 close($zfs_snapshots);
 
-my (undef, $date) = split(/@/, $snapshots[-1], 2);
+my $snapshot = $snapshots[-1];
+if ( $restore_date ) {
+	$snapshot = ( grep { m/$restore_date/ } @snapshots )[0];
+	print "restore snapshot: $snapshot\n";
+} else {
+	print "last snapshot: $snapshot\n";
+}
 
-print "last snapshot: $date\n";
+my (undef, $date) = split(/@/, $snapshot, 2);
+
 
 my $clone = "zamd/clone/$instance-$date";
 
