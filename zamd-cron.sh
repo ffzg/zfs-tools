@@ -9,7 +9,10 @@ cd /srv/zfs-tools
 
 /srv/zfs-tools/diskrsync.sh
 
-./zfs-snap-sync.pl r1u38:zfs zamd/proxmox/r1u38
+#./zfs-snap-sync.pl r1u38:zfs zamd/proxmox/r1u38
+./r1u38-pull-backup.sh
+
+sh -x mlin-pull.sh
 
 ZFS_POOL=zamd /srv/zfs-tools/zfs-list.pl | tee /dev/shm/zfs-list.txt
 

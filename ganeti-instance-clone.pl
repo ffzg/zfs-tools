@@ -79,55 +79,11 @@ foreach my $from ( @disks_glob ) {
 	}
 }
 
-sub append_to {
-	my ($what,$path) = @_;
-	my $full_path = "/$clone/$path";
-	my $fh;
-	my $allready_done = 0;
-	if ( ! -e $full_path ) {
-		print "WARNING $full_path doesn't exists, skipping adding $what\n";
-		open($fh, '>', $full_path);
-	} else {
-		open($fh, '<', $full_path);
-		while(<$fh>) {
-			$allready_done = 1 if m/\Q$what\E/;
-		}
-		close($fh);
-	}
-	if ( ! $allready_done ) {
-		open($fh, '>>', $full_path);
-		print $fh $what . "\n";
-		close($fh);
-		print "MODIFIED $full_path $what\n";
-	}
-}
-
-append_to 'PS1="'.$date.' $PS1"' => 'root/.bashrc';
-append_to 'PS1="'.$date.' $PS1"' => 'home/dpavlin/.bashrc';
-
+warn "## remove acpid which conflicts with systemd-nspawn";
 system "systemd-nspawn --directory /$clone apt-get remove -y acpid";
 
-
-sub comment_line {
-	my ( $path, $pattern ) = @_;
-	open(my $i, '<', $path);
-	open(my $o ,'>', $path . '.new');
-	my $found = 0;
-	while(<$i>) {
-		if ( m/$pattern/ ) {
-			print "# $path $pattern commented $_";
-			s/%/#/;
-			$found = 1;
-		}
-		print $o $_;
-	}
-	if ( $found ) {
-		rename $path . '.new' => $path;
-	}
-}
-
-# comment out nfs and cifs filesystems in /etc/fstab
-comment_line "/$clone/etc/fstab" => '(nfs|cifs)';
+warn "## modify instance $clone";
+system "/srv/zfs-tools/ganeti-instance-modify.pl /$clone";
 
 
 print "# boot instance with:\n";
