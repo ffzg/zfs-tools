@@ -40,8 +40,15 @@ fi
 
 echo -n "systemd-nspawn --directory /$clone --hostname=\"$hostname\" \$@ " > /dev/shm/$instance.nspawn
 
-join /dev/shm/$instance.br /dev/shm/$instance.eth | tee /dev/shm/$instance.network \
-	| awk -v hostname=$hostname -v if_name=$( echo $hostname | head -c 8 ) '{ print "--network-veth-extra "if_name"-"$2":"$3 }' | xargs echo >> /dev/shm/$instance.nspawn
+join /dev/shm/$instance.br /dev/shm/$instance.eth | tee /dev/shm/$instance.network
+
+if [ "$instance" = "mudrac" ] ; then
+	echo "FIXUP owerride mudrac eth1010 to br1010"
+	echo "1 br1010 eth1010" > /dev/shm/mudrac.network
+fi
+
+cat /dev/shm/$instance.network \
+| awk -v hostname=$hostname -v if_name=$( echo $hostname | head -c 8 ) '{ print "--network-veth-extra "if_name"-"$2":"$3 }' | xargs echo >> /dev/shm/$instance.nspawn
 
 chmod 755 /dev/shm/$instance.nspawn
 ls -al /dev/shm/$instance.nspawn
