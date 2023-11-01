@@ -48,27 +48,31 @@ sub comment_line {
 	$path = "$clone/$path";
 	open(my $i, '<', $path);
 	open(my $o ,'>', $path . '.new');
-	my $found = 0;
+	my @found;
 	while(<$i>) {
 		if ( m/$pattern/ && ! m/^#/ ) {
 			print "# $path $pattern commented $_";
+			push @found, $_;
 			s/^/#/;
-			$found = 1;
 		}
 		print $o $_;
 	}
 	close($i);
 	close($o);
-	if ( $found ) {
+	if ( @found ) {
 		warn "# $path modified\n";
 		rename $path . '.new' => $path;
 	}
+	#warn "## comment_line $path $pattern =( @found )\n";
+	return join("\n", @found);
 }
-
 
 # comment out nfs and cifs filesystems in /etc/fstab
 comment_line "/etc/fstab" => '(nfs|cifs)';
 
-comment_line "/etc/resolv.conf" => 'nameserver';
-append_to    "/etc/resolv.conf" => 'nameserver 193.198.212.255';
-
+if ( comment_line "/etc/resolv.conf" => '^nameserver 193.198.212.8' ) {
+	append_to    "/etc/resolv.conf" => 'nameserver 193.198.212.255';
+}
+if ( comment_line '/etc/resolv.conf' => '^nameserver 10.20.0.200' ) {
+	append_to    "/etc/resolv.conf" => 'nameserver 10.21.0.254';
+}
