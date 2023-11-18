@@ -78,4 +78,4 @@ if ( comment_line '/etc/resolv.conf' => '^nameserver 10.20.0.200' ) {
 }
 
 # disable IPv6 inside container so that our http ipv4 proxy works
-append_to '/etc/sysctl.conf' => 'net.ipv6.conf.all.disable_ipv6 = 1';
+#append_to '/etc/sysctl.conf' => 'net.ipv6.conf.all.disable_ipv6 = 1';
