@@ -39,9 +39,9 @@ sub cmd_pipe {
 	my $cmd = '';
 	# use compression and mbuffer only if over network
 	if ( $from_ssh || $to_ssh ) {
-		$from_cmd = "$from_cmd | zstd";
+		#$from_cmd = "$from_cmd | zstd";
 		#$from_cmd .= " | mbuffer -s 128k -R $rate"; ## XXX remove mbuffer
-		$to_cmd =   "zstd -d | $to_cmd";
+		#$to_cmd =   "zstd -d | $to_cmd";
 	}
 	if ( $from_ssh ) {
 		$cmd = "$from_ssh '$from_cmd'";
