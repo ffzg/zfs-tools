@@ -69,6 +69,9 @@ while(<$list>) {
 		( $tags->{instance}, $tags->{disk}, $tags->{date} ) = ( 'mlin', 0, $t[-1] );
 	}
 
+	# support sanoid snapshots
+	$tags->{date} =~ s/autosnap_(\d\d\d\d-\d\d-\d\d)_\d\d:\d\d:\d\d_daily/$1/;
+
 	warn "# tags = ",dump($tags) if $debug;
 
 	if ( $tags->{date} !~ m/^\d\d\d\d-\d\d-\d\d$/ ) {
