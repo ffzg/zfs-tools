@@ -43,8 +43,11 @@ logicalreferenced
 
 my $stat;
 
+open(my $s_fh, '>', '/dev/shm/zfs.snapshots');
+
 open(my $list, '-|', 'sudo zfs list -H -p -o '.join(',',@props)." -t snapshot -r $pool");
 while(<$list>) {
+	print $s_fh $_;
 	chomp;
 	my @v = split(/\t/,$_);
 	my %h;
