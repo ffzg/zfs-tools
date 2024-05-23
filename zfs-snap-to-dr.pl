@@ -30,7 +30,8 @@ sub list_snapshots {
 	my @s;
 	while(<$fh>) {
 		chomp;
-		if ( ! m/\@\d\d\d\d-\d\d-\d\d/ ) {
+		# take sanoid daily snapshots into account
+		if ( ! m/\@\d\d\d\d-\d\d-\d\d/ && ! m/\@autosnap_\d\d\d\d-\d\d-\d\d_\d\d:\d\d:\d\d_daily/ ) {
 			warn "IGNORE snapshot $_";
 			next;
 		}
