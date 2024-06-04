@@ -128,7 +128,10 @@ sub sync_snapshot {
 		return;
 	}
 
-	die "can't find common snapshot beween $from_pool and $to_pool in ",dump( [ $from ], [ $to ] ) unless $start;
+	if ( ! $start ) {
+		warn "ERROR: can't find common snapshot beween $from_pool and $to_pool in ",dump( [ $from ], [ $to ] );
+		return;
+	}
 
 	my $start_snap = $start;
 	$start_snap =~ s{^.+\@}{};
