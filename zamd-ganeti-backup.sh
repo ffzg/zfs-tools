@@ -2,8 +2,8 @@
 
 cd /srv/zfs-tools
 
-ssh root@cluster.gnt.ffzg.hr /srv/gnt-info/gnt-lv-remove-snap.sh
-ssh root@oscar.gnt.ffzg.hr /srv/gnt-info/gnt-lv-remove-snap.sh
+ssh root@cluster.gnt.ffzg.hr /srv/gnt-info/gnt-lv-remove-snap.sh || true
+ssh root@oscar.gnt.ffzg.hr /srv/gnt-info/gnt-lv-remove-snap.sh || true
 
 :> /dev/shm/cluster.log
 :> /dev/shm/oscar.log
