@@ -47,12 +47,15 @@ test -d /zamd/log/rsync/$instance || mkdir -p /zamd/log/rsync/$instance
 			--log-file=/zamd/log/rsync/$instance/$today \
 			--log-file-format="%i %n%L %b %l" \
 			$rsync_from /zamd/$cluster/$instance/$disk/ 2>&1
-			then
-				zfs snap zamd/$cluster/$instance/$disk@$today
-				backup_ok=1
-			else
-				echo $cluster $instance $disk >> /dev/shm/backup.errors
+		then
+			zfs snap zamd/$cluster/$instance/$disk@$today
+			backup_ok=1
+		else
+			echo $cluster $instance $disk >> /dev/shm/backup.errors
+			if grep 'Permission denied' /zamd/log/rsync/$instance/$today ; then
 				grep rsync: /zamd/log/rsync/$instance/$today | grep 'Permission denied' | sed -e 's/^.*open "//' -e 's/".*$//' | tee /dev/shm/fix-permissions.$instance.files | xargs rm -v
+			fi
+			tail /zamd/log/rsync/$instance/$today
 
 			sleep 3
 		fi
