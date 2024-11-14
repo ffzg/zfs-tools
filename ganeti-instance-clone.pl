@@ -85,6 +85,19 @@ system "systemd-nspawn --directory /$clone apt-get remove -y acpid";
 warn "## modify instance $clone";
 system "/srv/zfs-tools/ganeti-instance-modify.pl /$clone";
 
+warn "## add tsocks";
+system "systemd-nspawn --directory /$clone apt-get install -y tsocks";
+open(my $tsocks_fh, '>', "/$clone/etc/tsocks.conf");
+print $tsocks_fh qq{
+local = 193.198.212.0/255.255.252.0
+local = 10.0.0.0/255.0.0.0
+
+server = 193.198.212.255
+server_type = 5
+server_port = 1080
+};
+close($tsocks_fh);
+
 
 print "# boot instance with:\n";
 print "cd /$clone ; /srv/zfs-tools/ganeti-nspawn.sh --boot\n";
