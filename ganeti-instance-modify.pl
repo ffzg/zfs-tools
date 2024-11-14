@@ -39,6 +39,7 @@ foreach my $path ( qw(
 ) ) {
 
 append_to $path => 'export http_proxy=http://193.198.212.255:8888';
+append_to $path => 'export https_proxy=http://193.198.212.255:8888';
 append_to $path => 'PS1="'.$date.' $PS1"';
 
 }
