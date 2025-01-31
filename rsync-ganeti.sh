@@ -8,7 +8,7 @@ today=$( date +%Y-%m-%d )
 test -d /zamd/log/rsync/$instance || mkdir -p /zamd/log/rsync/$instance
 
 (
-	:> /zamd/log/rsync/$instance/$today
+	#:> /zamd/log/rsync/$instance/$today
 
 	snap_tries=0
 	snap_ok=0
