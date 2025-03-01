@@ -129,6 +129,20 @@ sub unique_splice {
 	return grep { defined && $_ ge $from } map { ++$u{$_} == 1 ? $_ : undef } sort @$array;
 }
 
+my $proxmox;
+
+open(my $proxmox_fh, '<', '/zamd/proxmox/qm.list');
+my $h = <$proxmox_fh>;
+while(<$proxmox_fh>) {
+	chomp;
+	s/^\s+//;
+	my ( $id, $name, undef ) = split(/\s+/, $_, 3 );
+
+	$proxmox->{$id} = $name;
+}
+close($proxmox_fh);
+
+
 $pool =~ s{/}{_}g if $pool =~ m{/};
 
 open(my $out, '>', "/dev/shm/$pool-list.txt");
@@ -140,7 +154,11 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 	my $date;
 	my @backup_dates = unique_splice( $stat->{backups}->{$instance}, $dates[$#dates - $last]);
 	#warn "# instance $instance ",dump(@backup_dates);
-	my @line = ( sprintf("%-${longest_instance}s", $instance) );
+	my $instance_name = $instance;
+	if ( $instance_name =~ /vm-(\d+)-disk-\d+/ ) {
+		$instance_name = $proxmox->{$1} || $instance;
+	}
+	my @line = ( sprintf("%-${longest_instance}s", $instance_name) );
 	foreach my $i ( $#dates - $last .. $#dates ) {
 		my $col = $dates[$i];
 		$date ||= shift @backup_dates;
@@ -153,11 +171,11 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 			push @line, $date if $show_date;
 			push @line, h_size($stat->{size}->{$instance}->{$date}) if $show_size;
 			$stat->{backup_count}->{$date}++;
-			print $csv "$date,$instance,$stat->{size}->{$instance}->{$date}\n";
+			print $csv "$date,$instance_name,$stat->{size}->{$instance}->{$date}\n";
 			$date = undef;
 		}
 	}
-	push @line, sprintf("%-${longest_instance}s", $instance);
+	push @line, sprintf("%-${longest_instance}s", $instance_name);
 	print $out join(' ',@line), "\n";
 	print join(' ',@line), "\n";
 
