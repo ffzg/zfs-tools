@@ -156,7 +156,7 @@ foreach my $instance (sort keys %{ $stat->{backups} }) {
 	#warn "# instance $instance ",dump(@backup_dates);
 	my $instance_name = $instance;
 	if ( $instance_name =~ /vm-(\d+)-disk-\d+/ ) {
-		$instance_name = $proxmox->{$1} || $instance;
+		$instance_name = $1 . ' ' . $proxmox->{$1};
 	}
 	my @line = ( sprintf("%-${longest_instance}s", $instance_name) );
 	foreach my $i ( $#dates - $last .. $#dates ) {
