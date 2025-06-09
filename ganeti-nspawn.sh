@@ -2,6 +2,11 @@
 
 if [ -e etc/os-release ] ; then
 	clone=$(pwd)
+elif [ -e etc/hostname ] ; then
+	clone=$(pwd)
+else
+	echo "FATAL: no os install in pwd $(pwd)"
+	exit 1
 fi
 
 echo "# directory $clone"
